@@ -50,6 +50,7 @@ jobs:
           coverage: none
 
       - name: Setup problem matchers
+        if: ${{ !env.ACT }}
         run: |
           echo "::add-matcher::${{ runner.tool_cache }}/php.json"
           echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
@@ -60,6 +61,7 @@ jobs:
           composer update --${{ matrix.stability }} --prefer-dist --no-interaction
 
       - name: List Installed Dependencies
+        if: ${{ !env.ACT }}
         run: composer show -D
 
       - name: Execute tests

@@ -1,15 +1,13 @@
-name: Fix PHP code style issues
+name: Code Style
 
 on:
   push:
     paths:
       - '**.php'
-
-permissions:
-  contents: write
+      - 'pint.json'
 
 jobs:
-  php-code-styling:
+  pint:
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -17,10 +15,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Fix PHP code style issues
-        uses: aglipanci/laravel-pint-action@2.6
-
-      - name: Commit changes
-        uses: stefanzweifel/git-auto-commit-action@v5
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
         with:
-          commit_message: Fix styling
+          php-version: '8.3'
+          coverage: none
+
+      - name: Install dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Run Pint
+        run: ./vendor/bin/pint --test

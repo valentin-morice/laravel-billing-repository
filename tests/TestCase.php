@@ -33,7 +33,7 @@ class TestCase extends Orchestra
             'prefix' => '',
         ]);
 
-        foreach (\Illuminate\Support\Facades\File::allFiles(__DIR__ . '/../database/migrations') as $migration) {
+        foreach (\Illuminate\Support\Facades\File::allFiles(__DIR__.'/../database/migrations') as $migration) {
             (include $migration->getRealPath())->up();
         }
     }

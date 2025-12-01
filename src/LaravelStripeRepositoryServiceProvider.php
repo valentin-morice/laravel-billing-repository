@@ -2,6 +2,7 @@
 
 namespace ValentinMorice\LaravelStripeRepository;
 
+use Spatie\LaravelPackageTools\Exceptions\InvalidPackage;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Stripe\Stripe;
@@ -11,6 +12,9 @@ use ValentinMorice\LaravelStripeRepository\Stripe\StripeClient;
 
 class LaravelStripeRepositoryServiceProvider extends PackageServiceProvider
 {
+    /**
+     * @throws InvalidPackage
+     */
     public function register(): void
     {
         parent::register();

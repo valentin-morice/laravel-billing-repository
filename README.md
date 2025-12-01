@@ -1,4 +1,4 @@
-# Config-as-code for Stripe in Laravel. Define products, prices, tax rates, webhooks, and billing settings in versioned files, then plan/apply with artisan commands.
+# Config-as-code for Stripe in Laravel.
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/valentin-morice/laravel-price-repository.svg?style=flat-square)](https://packagist.org/packages/valentin-morice/laravel-price-repository)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/valentin-morice/laravel-price-repository/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/valentin-morice/laravel-price-repository/actions?query=workflow%3Arun-tests+branch%3Amain)

@@ -1,12 +1,12 @@
 <?php
 
-namespace ValentinMorice\LaravelPriceRepository;
+namespace ValentinMorice\LaravelStripeRepository;
 
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use ValentinMorice\LaravelPriceRepository\Commands\LaravelPriceRepositoryCommand;
+use ValentinMorice\LaravelStripeRepository\Commands\LaravelStripeRepositoryCommand;
 
-class LaravelPriceRepositoryServiceProvider extends PackageServiceProvider
+class LaravelStripeRepositoryServiceProvider extends PackageServiceProvider
 {
     public function configurePackage(Package $package): void
     {
@@ -16,10 +16,10 @@ class LaravelPriceRepositoryServiceProvider extends PackageServiceProvider
          * More info: https://github.com/spatie/laravel-package-tools
          */
         $package
-            ->name('laravel-price-repository')
+            ->name('laravel-stripe-repository')
             ->hasConfigFile()
             ->hasViews()
-            ->hasMigration('create_laravel_price_repository_table')
-            ->hasCommand(LaravelPriceRepositoryCommand::class);
+            ->hasMigration('create_laravel_stripe_repository_table')
+            ->hasCommand(LaravelStripeRepositoryCommand::class);
     }
 }

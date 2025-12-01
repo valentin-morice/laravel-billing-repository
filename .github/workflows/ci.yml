@@ -1,20 +1,64 @@
-name: run-tests
+name: CI
 
 on:
   push:
     paths:
       - '**.php'
-      - '.github/workflows/run-tests.yml'
+      - '.github/workflows/ci.yml'
       - 'phpunit.xml.dist'
       - 'composer.json'
       - 'composer.lock'
+      - 'phpstan.neon.dist'
+      - 'pint.json'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  test:
+  pint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    name: Code Style (Pint)
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Install dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Run Pint
+        run: ./vendor/bin/pint --test
+
+  phpstan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    name: Static Analysis (PHPStan)
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+
+      - name: Install dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Run PHPStan
+        run: ./vendor/bin/phpstan --error-format=github
+
+  tests:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 5
     strategy:
@@ -36,7 +80,7 @@ jobs:
             stability: prefer-lowest
             os: ubuntu-latest
 
-    name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.stability }}
+    name: Tests P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.stability }}
 
     steps:
       - name: Checkout code

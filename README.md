@@ -1,15 +1,15 @@
 # Config-as-code for Stripe in Laravel.
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/valentin-morice/laravel-price-repository.svg?style=flat-square)](https://packagist.org/packages/valentin-morice/laravel-price-repository)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/valentin-morice/laravel-price-repository/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/valentin-morice/laravel-price-repository/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/valentin-morice/laravel-price-repository/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/valentin-morice/laravel-price-repository/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/valentin-morice/laravel-price-repository.svg?style=flat-square)](https://packagist.org/packages/valentin-morice/laravel-price-repository)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/valentin-morice/laravel-stripe-repository.svg?style=flat-square)](https://packagist.org/packages/valentin-morice/laravel-stripe-repository)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/valentin-morice/laravel-stripe-repository/ci.yml?branch=main&label=tests&style=flat-square)](https://github.com/valentin-morice/laravel-stripe-repository/actions?query=workflow%3Aci+branch%3Amain)
+[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/valentin-morice/laravel-stripe-repository/ci.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/valentin-morice/laravel-stripe-repository/actions?query=workflow%3Aci+branch%3Amain)
+[![Total Downloads](https://img.shields.io/packagist/dt/valentin-morice/laravel-stripe-repository.svg?style=flat-square)](https://packagist.org/packages/valentin-morice/laravel-stripe-repository)
 
 This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
 
 ## Support us
 
-[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/laravel-price-repository.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/laravel-price-repository)
+[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/laravel-stripe-repository.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/laravel-stripe-repository)
 
 We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
 
@@ -20,20 +20,20 @@ We highly appreciate you sending us a postcard from your hometown, mentioning wh
 You can install the package via composer:
 
 ```bash
-composer require valentin-morice/laravel-price-repository
+composer require valentin-morice/laravel-stripe-repository
 ```
 
 You can publish and run the migrations with:
 
 ```bash
-php artisan vendor:publish --tag="laravel-price-repository-migrations"
+php artisan vendor:publish --tag="laravel-stripe-repository-migrations"
 php artisan migrate
 ```
 
 You can publish the config file with:
 
 ```bash
-php artisan vendor:publish --tag="laravel-price-repository-config"
+php artisan vendor:publish --tag="laravel-stripe-repository-config"
 ```
 
 This is the contents of the published config file:
@@ -46,14 +46,14 @@ return [
 Optionally, you can publish the views using
 
 ```bash
-php artisan vendor:publish --tag="laravel-price-repository-views"
+php artisan vendor:publish --tag="laravel-stripe-repository-views"
 ```
 
 ## Usage
 
 ```php
-$laravelPriceRepository = new ValentinMorice\LaravelPriceRepository();
-echo $laravelPriceRepository->echoPhrase('Hello, ValentinMorice!');
+$laravelStripeRepository = new ValentinMorice\LaravelStripeRepository();
+echo $laravelStripeRepository->echoPhrase('Hello, ValentinMorice!');
 ```
 
 ## Testing

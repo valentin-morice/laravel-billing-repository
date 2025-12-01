@@ -1,6 +1,6 @@
 <?php
 
-namespace ValentinMorice\LaravelPriceRepository\Database\Factories;
+namespace ValentinMorice\LaravelStripeRepository\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 

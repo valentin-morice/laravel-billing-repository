@@ -1,3 +1,3 @@
 # Changelog
 
-All notable changes to `laravel-price-repository` will be documented in this file.
+All notable changes to `laravel-stripe-repository` will be documented in this file.

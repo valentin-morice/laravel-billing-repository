@@ -1,12 +1,12 @@
 <?php
 
-namespace ValentinMorice\LaravelPriceRepository\Commands;
+namespace ValentinMorice\LaravelStripeRepository\Commands;
 
 use Illuminate\Console\Command;
 
-class LaravelPriceRepositoryCommand extends Command
+class LaravelStripeRepositoryCommand extends Command
 {
-    public $signature = 'laravel-price-repository';
+    public $signature = 'laravel-stripe-repository';
 
     public $description = 'My command';
 

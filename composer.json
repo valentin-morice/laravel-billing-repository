@@ -1,12 +1,12 @@
 {
-    "name": "valentin-morice/laravel-price-repository",
+    "name": "valentin-morice/laravel-stripe-repository",
     "description": "Config-as-code for Stripe in Laravel. Define products, prices, tax rates, webhooks, and billing settings in versioned files, then plan/apply with artisan commands.",
     "keywords": [
         "Valentin Morice",
         "laravel",
-        "laravel-price-repository"
+        "laravel-stripe-repository"
     ],
-    "homepage": "https://github.com/valentin-morice/laravel-price-repository",
+    "homepage": "https://github.com/valentin-morice/laravel-stripe-repository",
     "license": "MIT",
     "authors": [
         {
@@ -35,13 +35,13 @@
     },
     "autoload": {
         "psr-4": {
-            "ValentinMorice\\LaravelPriceRepository\\": "src/",
-            "ValentinMorice\\LaravelPriceRepository\\Database\\Factories\\": "database/factories/"
+            "ValentinMorice\\LaravelStripeRepository\\": "src/",
+            "ValentinMorice\\LaravelStripeRepository\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "ValentinMorice\\LaravelPriceRepository\\Tests\\": "tests/",
+            "ValentinMorice\\LaravelStripeRepository\\Tests\\": "tests/",
             "Workbench\\App\\": "workbench/app/"
         }
     },
@@ -63,10 +63,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "ValentinMorice\\LaravelPriceRepository\\LaravelPriceRepositoryServiceProvider"
+                "ValentinMorice\\LaravelStripeRepository\\LaravelStripeRepositoryServiceProvider"
             ],
             "aliases": {
-                "LaravelPriceRepository": "ValentinMorice\\LaravelPriceRepository\\Facades\\LaravelPriceRepository"
+                "LaravelStripeRepository": "ValentinMorice\\LaravelStripeRepository\\Facades\\LaravelStripeRepository"
             }
         }
     },

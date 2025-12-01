@@ -4,6 +4,7 @@ namespace ValentinMorice\LaravelStripeRepository;
 
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Stripe\Stripe;
 use ValentinMorice\LaravelStripeRepository\Commands\LaravelStripeRepositoryCommand;
 
 class LaravelStripeRepositoryServiceProvider extends PackageServiceProvider
@@ -23,5 +24,14 @@ class LaravelStripeRepositoryServiceProvider extends PackageServiceProvider
                 'create_stripe_prices_table',
             ])
             ->hasCommand(LaravelStripeRepositoryCommand::class);
+    }
+
+    public function packageBooted(): void
+    {
+        $apiKey = config('stripe-repository.api_key');
+
+        if ($apiKey) {
+            Stripe::setApiKey($apiKey);
+        }
     }
 }

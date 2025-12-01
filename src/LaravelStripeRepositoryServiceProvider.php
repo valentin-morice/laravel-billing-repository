@@ -18,7 +18,6 @@ class LaravelStripeRepositoryServiceProvider extends PackageServiceProvider
         $package
             ->name('laravel-stripe-repository')
             ->hasConfigFile()
-            ->hasViews()
             ->hasMigration('create_laravel_stripe_repository_table')
             ->hasCommand(LaravelStripeRepositoryCommand::class);
     }

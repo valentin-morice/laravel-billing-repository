@@ -2,6 +2,4 @@
 
 namespace ValentinMorice\LaravelStripeRepository;
 
-class LaravelStripeRepository
-{
-}
+class LaravelStripeRepository {}

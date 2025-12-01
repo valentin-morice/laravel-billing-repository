@@ -8,6 +8,5 @@ readonly class PriceDefinition
         public int $amount,
         public string $currency = 'eur',
         public ?array $recurring = null,
-    ) {
-    }
+    ) {}
 }

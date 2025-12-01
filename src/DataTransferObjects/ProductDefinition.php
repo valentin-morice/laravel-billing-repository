@@ -11,6 +11,5 @@ readonly class ProductDefinition
         public string $name,
         public array $prices,
         public ?string $description = null,
-    ) {
-    }
+    ) {}
 }

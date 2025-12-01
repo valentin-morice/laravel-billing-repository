@@ -5,10 +5,19 @@ namespace ValentinMorice\LaravelStripeRepository;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Stripe\Stripe;
-use ValentinMorice\LaravelStripeRepository\Commands\LaravelStripeRepositoryCommand;
+use ValentinMorice\LaravelStripeRepository\Commands\StripeDeployCommand;
+use ValentinMorice\LaravelStripeRepository\Contracts\StripeClientInterface;
+use ValentinMorice\LaravelStripeRepository\Stripe\StripeClient;
 
 class LaravelStripeRepositoryServiceProvider extends PackageServiceProvider
 {
+    public function register(): void
+    {
+        parent::register();
+
+        $this->app->singleton(StripeClientInterface::class, StripeClient::class);
+    }
+
     public function configurePackage(Package $package): void
     {
         /*
@@ -23,7 +32,7 @@ class LaravelStripeRepositoryServiceProvider extends PackageServiceProvider
                 'create_stripe_products_table',
                 'create_stripe_prices_table',
             ])
-            ->hasCommand(LaravelStripeRepositoryCommand::class);
+            ->hasCommand(StripeDeployCommand::class);
     }
 
     public function packageBooted(): void

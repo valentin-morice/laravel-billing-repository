@@ -16,6 +16,7 @@ return new class extends Migration
             $table->integer('amount');
             $table->string('currency', 3);
             $table->json('recurring')->nullable();
+            $table->string('nickname')->nullable();
             $table->boolean('active')->default(true);
             $table->timestamps();
 

@@ -11,7 +11,8 @@ class PriceResource implements PriceResourceInterface
         string $productId,
         int $amount,
         string $currency,
-        ?array $recurring = null
+        ?array $recurring = null,
+        ?string $nickname = null
     ): string {
         $data = [
             'product' => $productId,
@@ -23,8 +24,17 @@ class PriceResource implements PriceResourceInterface
             $data['recurring'] = $recurring;
         }
 
+        if ($nickname) {
+            $data['nickname'] = $nickname;
+        }
+
         $price = Price::create($data);
 
         return $price->id;
+    }
+
+    public function archive(string $priceId): object
+    {
+        return Price::update($priceId, ['active' => false]);
     }
 }

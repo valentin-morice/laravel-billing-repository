@@ -13,6 +13,7 @@ return new class extends Migration
             $table->string('key')->unique();
             $table->string('stripe_id')->unique();
             $table->string('name');
+            $table->text('description')->nullable();
             $table->boolean('active')->default(true);
             $table->timestamps();
 

@@ -8,6 +8,9 @@ interface PriceResourceInterface
         string $productId,
         int $amount,
         string $currency,
-        ?array $recurring = null
+        ?array $recurring = null,
+        ?string $nickname = null
     ): string;
+
+    public function archive(string $priceId): object;
 }

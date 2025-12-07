@@ -6,7 +6,7 @@ use ValentinMorice\LaravelStripeRepository\Contracts\StripeClientInterface;
 use ValentinMorice\LaravelStripeRepository\DataTransferObjects\ProductDefinition;
 use ValentinMorice\LaravelStripeRepository\Models\StripeProduct;
 
-class SyncAction
+class CreateAction
 {
     public function __construct(
         protected StripeClientInterface $client
@@ -14,26 +14,16 @@ class SyncAction
 
     public function handle(string $productKey, ProductDefinition $definition): StripeProduct
     {
-        $existingProduct = StripeProduct::where('key', $productKey)->first();
-
-        if ($existingProduct) {
-            // For now, just retrieve and return existing product
-            $this->client->product()->retrieve($existingProduct->stripe_id);
-
-            return $existingProduct;
-        }
-
-        // Create new product in Stripe
         $stripeProductId = $this->client->product()->create(
             $definition->name,
             $definition->description
         );
 
-        // Create record in database
         return StripeProduct::create([
             'key' => $productKey,
             'stripe_id' => $stripeProductId,
             'name' => $definition->name,
+            'description' => $definition->description,
             'active' => true,
         ]);
     }

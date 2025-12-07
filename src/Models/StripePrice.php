@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $amount
  * @property string $currency
  * @property array|null $recurring
+ * @property string|null $nickname
  * @property bool $active
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
@@ -26,6 +27,7 @@ class StripePrice extends Model
         'amount',
         'currency',
         'recurring',
+        'nickname',
         'active',
     ];
 

@@ -7,4 +7,8 @@ interface ProductResourceInterface
     public function create(string $name, ?string $description = null): string;
 
     public function retrieve(string $productId): object;
+
+    public function update(string $productId, array $params): object;
+
+    public function archive(string $productId): object;
 }

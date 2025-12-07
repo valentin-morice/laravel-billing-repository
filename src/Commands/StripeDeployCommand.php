@@ -27,8 +27,19 @@ class StripeDeployCommand extends Command
             $results = $deployer->deploy();
 
             $this->newLine();
-            $this->info("✓ Created {$results['products_created']} products");
-            $this->info("✓ Created {$results['prices_created']} prices");
+            $this->line('<fg=green>Products:</>');
+            $this->info("  Created: {$results['products']['created']}");
+            $this->info("  Updated: {$results['products']['updated']}");
+            $this->info("  Unchanged: {$results['products']['unchanged']}");
+            $this->info("  Archived: {$results['products']['archived']}");
+
+            $this->newLine();
+            $this->line('<fg=green>Prices:</>');
+            $this->info("  Created: {$results['prices']['created']}");
+            $this->info("  Updated: {$results['prices']['updated']}");
+            $this->info("  Unchanged: {$results['prices']['unchanged']}");
+            $this->info("  Archived: {$results['prices']['archived']}");
+
             $this->newLine();
             $this->info('Deployment complete!');
 

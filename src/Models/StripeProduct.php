@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $key
  * @property string $stripe_id
  * @property string $name
+ * @property string|null $description
  * @property bool $active
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
@@ -20,6 +21,7 @@ class StripeProduct extends Model
         'key',
         'stripe_id',
         'name',
+        'description',
         'active',
     ];
 

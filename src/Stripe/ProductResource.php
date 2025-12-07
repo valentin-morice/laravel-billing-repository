@@ -21,4 +21,14 @@ class ProductResource implements ProductResourceInterface
     {
         return Product::retrieve($productId);
     }
+
+    public function update(string $productId, array $params): object
+    {
+        return Product::update($productId, $params);
+    }
+
+    public function archive(string $productId): object
+    {
+        return Product::update($productId, ['active' => false]);
+    }
 }

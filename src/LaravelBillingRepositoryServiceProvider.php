@@ -25,7 +25,7 @@ class LaravelBillingRepositoryServiceProvider extends PackageServiceProvider
             $provider = config('billing.provider', 'stripe');
 
             return match ($provider) {
-                'stripe' => new StripeAdapter(),
+                'stripe' => new StripeAdapter,
                 default => throw new \InvalidArgumentException("Unknown billing provider: {$provider}"),
             };
         });

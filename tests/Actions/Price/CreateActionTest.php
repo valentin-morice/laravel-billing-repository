@@ -1,12 +1,12 @@
 <?php
 
 use Mockery as m;
-use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Price\CreateAction;
 use ValentinMorice\LaravelBillingRepository\Contracts\PriceResourceInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
 use ValentinMorice\LaravelBillingRepository\DataTransferObjects\PriceDefinition;
 use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
+use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Price\CreateAction;
 
 beforeEach(function () {
     $this->artisan('migrate', ['--database' => 'testing']);

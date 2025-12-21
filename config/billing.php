@@ -14,7 +14,7 @@ return [
     | The billing provider to use. Currently supported: stripe
     */
 
-    'provider' => env('BILLING_PROVIDER', 'stripe'),
+    'provider' => env('BILLING_PROVIDER'),
 
     /*
     |--------------------------------------------------------------------------
@@ -26,7 +26,7 @@ return [
     |
     */
 
-    'api_key' => env('BILLING_API_KEY', env('STRIPE_SECRET')),
+    'api_key' => env('BILLING_API_KEY'),
 
     /*
     |--------------------------------------------------------------------------

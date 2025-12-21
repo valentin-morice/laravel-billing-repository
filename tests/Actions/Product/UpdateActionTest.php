@@ -1,11 +1,11 @@
 <?php
 
 use Mockery as m;
-use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Product\UpdateAction;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProductResourceInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
 use ValentinMorice\LaravelBillingRepository\DataTransferObjects\ProductDefinition;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
+use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Product\UpdateAction;
 
 beforeEach(function () {
     $this->artisan('migrate', ['--database' => 'testing']);

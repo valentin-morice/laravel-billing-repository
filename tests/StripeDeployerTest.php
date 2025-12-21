@@ -6,9 +6,9 @@ use ValentinMorice\LaravelBillingRepository\Contracts\ProductResourceInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
 use ValentinMorice\LaravelBillingRepository\DataTransferObjects\PriceDefinition;
 use ValentinMorice\LaravelBillingRepository\DataTransferObjects\ProductDefinition;
+use ValentinMorice\LaravelBillingRepository\Deployer;
 use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
-use ValentinMorice\LaravelBillingRepository\Deployer;
 
 beforeEach(function () {
     $this->artisan('migrate', ['--database' => 'testing']);

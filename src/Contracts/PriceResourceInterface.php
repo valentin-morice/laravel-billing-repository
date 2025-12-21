@@ -1,6 +1,6 @@
 <?php
 
-namespace ValentinMorice\LaravelStripeRepository\Contracts;
+namespace ValentinMorice\LaravelBillingRepository\Contracts;
 
 interface PriceResourceInterface
 {

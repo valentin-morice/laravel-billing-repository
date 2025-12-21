@@ -1,6 +1,6 @@
 <?php
 
-namespace ValentinMorice\LaravelStripeRepository\Models;
+namespace ValentinMorice\LaravelBillingRepository\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $product_id
  * @property string $type
- * @property string $stripe_id
+ * @property string $provider_id
  * @property int $amount
  * @property string $currency
  * @property array|null $recurring
@@ -18,12 +18,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  */
-class StripePrice extends Model
+class BillingPrice extends Model
 {
     protected $fillable = [
         'product_id',
         'type',
-        'stripe_id',
+        'provider_id',
         'amount',
         'currency',
         'recurring',
@@ -41,6 +41,6 @@ class StripePrice extends Model
 
     public function product(): BelongsTo
     {
-        return $this->belongsTo(StripeProduct::class, 'product_id');
+        return $this->belongsTo(BillingProduct::class, 'product_id');
     }
 }

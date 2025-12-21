@@ -1,12 +1,12 @@
 <?php
 
 use Mockery as m;
-use ValentinMorice\LaravelStripeRepository\Actions\Price\CreateAction;
-use ValentinMorice\LaravelStripeRepository\Contracts\PriceResourceInterface;
-use ValentinMorice\LaravelStripeRepository\Contracts\StripeClientInterface;
-use ValentinMorice\LaravelStripeRepository\DataTransferObjects\PriceDefinition;
-use ValentinMorice\LaravelStripeRepository\Models\StripePrice;
-use ValentinMorice\LaravelStripeRepository\Models\StripeProduct;
+use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Price\CreateAction;
+use ValentinMorice\LaravelBillingRepository\Contracts\PriceResourceInterface;
+use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
+use ValentinMorice\LaravelBillingRepository\DataTransferObjects\PriceDefinition;
+use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
+use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 
 beforeEach(function () {
     $this->artisan('migrate', ['--database' => 'testing']);
@@ -17,15 +17,15 @@ afterEach(function () {
 });
 
 it('creates one-time price in Stripe and database', function () {
-    $product = StripeProduct::create([
+    $product = BillingProduct::create([
         'key' => 'test_product',
-        'stripe_id' => 'prod_123',
+        'provider_id' => 'prod_123',
         'name' => 'Test Product',
         'active' => true,
     ]);
 
     $priceResource = m::mock(PriceResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('price')->andReturn($priceResource);
 
     $priceResource->shouldReceive('create')
@@ -38,28 +38,28 @@ it('creates one-time price in Stripe and database', function () {
 
     $result = $action->handle($product, 'default', $definition);
 
-    expect($result)->toBeInstanceOf(StripePrice::class)
+    expect($result)->toBeInstanceOf(BillingPrice::class)
         ->and($result->product_id)->toBe($product->id)
         ->and($result->type)->toBe('default')
-        ->and($result->stripe_id)->toBe('price_456')
+        ->and($result->provider_id)->toBe('price_456')
         ->and($result->amount)->toBe(1000)
         ->and($result->currency)->toBe('eur')
         ->and($result->recurring)->toBeNull()
         ->and($result->nickname)->toBeNull()
         ->and($result->active)->toBeTrue()
-        ->and(StripePrice::count())->toBe(1);
+        ->and(BillingPrice::count())->toBe(1);
 });
 
 it('creates recurring price with interval', function () {
-    $product = StripeProduct::create([
+    $product = BillingProduct::create([
         'key' => 'subscription',
-        'stripe_id' => 'prod_sub',
+        'provider_id' => 'prod_sub',
         'name' => 'Subscription',
         'active' => true,
     ]);
 
     $priceResource = m::mock(PriceResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('price')->andReturn($priceResource);
 
     $priceResource->shouldReceive('create')
@@ -81,15 +81,15 @@ it('creates recurring price with interval', function () {
 });
 
 it('creates price with custom currency', function () {
-    $product = StripeProduct::create([
+    $product = BillingProduct::create([
         'key' => 'test_product',
-        'stripe_id' => 'prod_123',
+        'provider_id' => 'prod_123',
         'name' => 'Test Product',
         'active' => true,
     ]);
 
     $priceResource = m::mock(PriceResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('price')->andReturn($priceResource);
 
     $priceResource->shouldReceive('create')
@@ -107,15 +107,15 @@ it('creates price with custom currency', function () {
 });
 
 it('creates price with nickname', function () {
-    $product = StripeProduct::create([
+    $product = BillingProduct::create([
         'key' => 'test_product',
-        'stripe_id' => 'prod_123',
+        'provider_id' => 'prod_123',
         'name' => 'Test Product',
         'active' => true,
     ]);
 
     $priceResource = m::mock(PriceResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('price')->andReturn($priceResource);
 
     $priceResource->shouldReceive('create')
@@ -132,15 +132,15 @@ it('creates price with nickname', function () {
 });
 
 it('creates price with all optional fields', function () {
-    $product = StripeProduct::create([
+    $product = BillingProduct::create([
         'key' => 'subscription',
-        'stripe_id' => 'prod_sub',
+        'provider_id' => 'prod_sub',
         'name' => 'Subscription',
         'active' => true,
     ]);
 
     $priceResource = m::mock(PriceResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('price')->andReturn($priceResource);
 
     $priceResource->shouldReceive('create')
@@ -166,15 +166,15 @@ it('creates price with all optional fields', function () {
 });
 
 it('handles multiple price types for same product', function () {
-    $product = StripeProduct::create([
+    $product = BillingProduct::create([
         'key' => 'test_product',
-        'stripe_id' => 'prod_123',
+        'provider_id' => 'prod_123',
         'name' => 'Test Product',
         'active' => true,
     ]);
 
     $priceResource = m::mock(PriceResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('price')->andReturn($priceResource);
 
     $priceResource->shouldReceive('create')
@@ -189,19 +189,19 @@ it('handles multiple price types for same product', function () {
 
     expect($defaultResult->type)->toBe('default')
         ->and($premiumResult->type)->toBe('premium')
-        ->and(StripePrice::count())->toBe(2);
+        ->and(BillingPrice::count())->toBe(2);
 });
 
 it('throws exception when Stripe API fails', function () {
-    $product = StripeProduct::create([
+    $product = BillingProduct::create([
         'key' => 'test_product',
-        'stripe_id' => 'prod_123',
+        'provider_id' => 'prod_123',
         'name' => 'Test Product',
         'active' => true,
     ]);
 
     $priceResource = m::mock(PriceResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('price')->andReturn($priceResource);
 
     $priceResource->shouldReceive('create')
@@ -215,5 +215,5 @@ it('throws exception when Stripe API fails', function () {
         ->toThrow(\Exception::class, 'Stripe API error');
 
     // Verify no database record was created
-    expect(StripePrice::count())->toBe(0);
+    expect(BillingPrice::count())->toBe(0);
 });

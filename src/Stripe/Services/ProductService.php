@@ -1,19 +1,19 @@
 <?php
 
-namespace ValentinMorice\LaravelStripeRepository\Services;
+namespace ValentinMorice\LaravelBillingRepository\Stripe\Services;
 
 use Illuminate\Database\Eloquent\Collection;
-use ValentinMorice\LaravelStripeRepository\Actions\Product\ArchiveAction;
-use ValentinMorice\LaravelStripeRepository\Actions\Product\CreateAction;
-use ValentinMorice\LaravelStripeRepository\Actions\Product\UpdateAction;
-use ValentinMorice\LaravelStripeRepository\Contracts\StripeClientInterface;
-use ValentinMorice\LaravelStripeRepository\DataTransferObjects\ProductDefinition;
-use ValentinMorice\LaravelStripeRepository\Models\StripeProduct;
+use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
+use ValentinMorice\LaravelBillingRepository\DataTransferObjects\ProductDefinition;
+use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
+use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Product\ArchiveAction;
+use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Product\CreateAction;
+use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Product\UpdateAction;
 
 class ProductService
 {
     public function __construct(
-        protected StripeClientInterface $client,
+        protected ProviderClientInterface $client,
         protected ?CreateAction $createAction = null,
         protected ?UpdateAction $updateAction = null,
         protected ?ArchiveAction $archiveAction = null,
@@ -25,7 +25,7 @@ class ProductService
 
     public function sync(string $productKey, ProductDefinition $definition): array
     {
-        $existingProduct = StripeProduct::where('key', $productKey)->first();
+        $existingProduct = BillingProduct::where('key', $productKey)->first();
 
         if ($existingProduct) {
             if ($this->hasChanged($existingProduct, $definition)) {
@@ -44,8 +44,8 @@ class ProductService
 
     public function archiveRemoved(array $configuredProductKeys): int
     {
-        /** @var Collection<int, StripeProduct> $removedProducts */
-        $removedProducts = StripeProduct::where('active', true)
+        /** @var Collection<int, BillingProduct> $removedProducts */
+        $removedProducts = BillingProduct::where('active', true)
             ->whereNotIn('key', $configuredProductKeys)
             ->get();
 
@@ -59,7 +59,7 @@ class ProductService
         return $archivedCount;
     }
 
-    protected function hasChanged(StripeProduct $product, ProductDefinition $definition): bool
+    protected function hasChanged(BillingProduct $product, ProductDefinition $definition): bool
     {
         return $product->name !== $definition->name
             || $product->description !== $definition->description;

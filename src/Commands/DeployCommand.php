@@ -1,29 +1,29 @@
 <?php
 
-namespace ValentinMorice\LaravelStripeRepository\Commands;
+namespace ValentinMorice\LaravelBillingRepository\Commands;
 
 use Illuminate\Console\Command;
-use ValentinMorice\LaravelStripeRepository\Contracts\StripeClientInterface;
-use ValentinMorice\LaravelStripeRepository\StripeDeployer;
+use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
+use ValentinMorice\LaravelBillingRepository\Deployer;
 
-class StripeDeployCommand extends Command
+class DeployCommand extends Command
 {
-    public $signature = 'stripe:deploy';
+    public $signature = 'billing:deploy';
 
-    public $description = 'Deploy Stripe products and prices from config to Stripe';
+    public $description = 'Deploy billing products and prices from config to your provider';
 
     public function __construct(
-        protected StripeClientInterface $client
+        protected ProviderClientInterface $client
     ) {
         parent::__construct();
     }
 
     public function handle(): int
     {
-        $this->info('Deploying Stripe products...');
+        $this->info('Deploying billing products...');
 
         try {
-            $deployer = new StripeDeployer($this->client);
+            $deployer = new Deployer($this->client);
             $results = $deployer->deploy();
 
             $this->newLine();

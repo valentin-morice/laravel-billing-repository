@@ -1,11 +1,11 @@
 <?php
 
 use Mockery as m;
-use ValentinMorice\LaravelStripeRepository\Actions\Product\CreateAction;
-use ValentinMorice\LaravelStripeRepository\Contracts\ProductResourceInterface;
-use ValentinMorice\LaravelStripeRepository\Contracts\StripeClientInterface;
-use ValentinMorice\LaravelStripeRepository\DataTransferObjects\ProductDefinition;
-use ValentinMorice\LaravelStripeRepository\Models\StripeProduct;
+use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Product\CreateAction;
+use ValentinMorice\LaravelBillingRepository\Contracts\ProductResourceInterface;
+use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
+use ValentinMorice\LaravelBillingRepository\DataTransferObjects\ProductDefinition;
+use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 
 beforeEach(function () {
     $this->artisan('migrate', ['--database' => 'testing']);
@@ -17,7 +17,7 @@ afterEach(function () {
 
 it('creates product in Stripe and database', function () {
     $productResource = m::mock(ProductResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('product')->andReturn($productResource);
 
     $productResource->shouldReceive('create')
@@ -33,18 +33,18 @@ it('creates product in Stripe and database', function () {
 
     $result = $action->handle('test_product', $definition);
 
-    expect($result)->toBeInstanceOf(StripeProduct::class)
+    expect($result)->toBeInstanceOf(BillingProduct::class)
         ->and($result->key)->toBe('test_product')
-        ->and($result->stripe_id)->toBe('prod_123')
+        ->and($result->provider_id)->toBe('prod_123')
         ->and($result->name)->toBe('Test Product')
         ->and($result->description)->toBeNull()
         ->and($result->active)->toBeTrue()
-        ->and(StripeProduct::count())->toBe(1);
+        ->and(BillingProduct::count())->toBe(1);
 });
 
 it('creates product with description', function () {
     $productResource = m::mock(ProductResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('product')->andReturn($productResource);
 
     $productResource->shouldReceive('create')
@@ -62,12 +62,12 @@ it('creates product with description', function () {
     $result = $action->handle('premium_product', $definition);
 
     expect($result->description)->toBe('A premium subscription product')
-        ->and($result->stripe_id)->toBe('prod_456');
+        ->and($result->provider_id)->toBe('prod_456');
 });
 
 it('throws exception when Stripe API fails', function () {
     $productResource = m::mock(ProductResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('product')->andReturn($productResource);
 
     $productResource->shouldReceive('create')
@@ -84,5 +84,5 @@ it('throws exception when Stripe API fails', function () {
         ->toThrow(\Exception::class, 'Stripe API error');
 
     // Verify no database record was created
-    expect(StripeProduct::count())->toBe(0);
+    expect(BillingProduct::count())->toBe(0);
 });

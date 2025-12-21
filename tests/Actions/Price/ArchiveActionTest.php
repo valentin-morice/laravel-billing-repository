@@ -1,11 +1,11 @@
 <?php
 
 use Mockery as m;
-use ValentinMorice\LaravelStripeRepository\Actions\Price\ArchiveAction;
-use ValentinMorice\LaravelStripeRepository\Contracts\PriceResourceInterface;
-use ValentinMorice\LaravelStripeRepository\Contracts\StripeClientInterface;
-use ValentinMorice\LaravelStripeRepository\Models\StripePrice;
-use ValentinMorice\LaravelStripeRepository\Models\StripeProduct;
+use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Price\ArchiveAction;
+use ValentinMorice\LaravelBillingRepository\Contracts\PriceResourceInterface;
+use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
+use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
+use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 
 beforeEach(function () {
     $this->artisan('migrate', ['--database' => 'testing']);
@@ -16,24 +16,24 @@ afterEach(function () {
 });
 
 it('archives price in Stripe and database', function () {
-    $product = StripeProduct::create([
+    $product = BillingProduct::create([
         'key' => 'test_product',
-        'stripe_id' => 'prod_123',
+        'provider_id' => 'prod_123',
         'name' => 'Test Product',
         'active' => true,
     ]);
 
-    $price = StripePrice::create([
+    $price = BillingPrice::create([
         'product_id' => $product->id,
         'type' => 'default',
-        'stripe_id' => 'price_456',
+        'provider_id' => 'price_456',
         'amount' => 1000,
         'currency' => 'eur',
         'active' => true,
     ]);
 
     $priceResource = m::mock(PriceResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('price')->andReturn($priceResource);
 
     $priceResource->shouldReceive('archive')
@@ -44,24 +44,24 @@ it('archives price in Stripe and database', function () {
     $action = new ArchiveAction($client);
     $result = $action->handle($price);
 
-    expect($result)->toBeInstanceOf(StripePrice::class)
+    expect($result)->toBeInstanceOf(BillingPrice::class)
         ->and($result->active)->toBeFalse()
-        ->and($result->stripe_id)->toBe('price_456')
-        ->and(StripePrice::where('active', false)->count())->toBe(1);
+        ->and($result->provider_id)->toBe('price_456')
+        ->and(BillingPrice::where('active', false)->count())->toBe(1);
 });
 
 it('preserves other price attributes when archiving', function () {
-    $product = StripeProduct::create([
+    $product = BillingProduct::create([
         'key' => 'test_product',
-        'stripe_id' => 'prod_123',
+        'provider_id' => 'prod_123',
         'name' => 'Test Product',
         'active' => true,
     ]);
 
-    $price = StripePrice::create([
+    $price = BillingPrice::create([
         'product_id' => $product->id,
         'type' => 'monthly',
-        'stripe_id' => 'price_monthly',
+        'provider_id' => 'price_monthly',
         'amount' => 999,
         'currency' => 'usd',
         'recurring' => ['interval' => 'month'],
@@ -70,7 +70,7 @@ it('preserves other price attributes when archiving', function () {
     ]);
 
     $priceResource = m::mock(PriceResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('price')->andReturn($priceResource);
 
     $priceResource->shouldReceive('archive')
@@ -90,17 +90,17 @@ it('preserves other price attributes when archiving', function () {
 });
 
 it('archives recurring price correctly', function () {
-    $product = StripeProduct::create([
+    $product = BillingProduct::create([
         'key' => 'subscription',
-        'stripe_id' => 'prod_sub',
+        'provider_id' => 'prod_sub',
         'name' => 'Subscription',
         'active' => true,
     ]);
 
-    $price = StripePrice::create([
+    $price = BillingPrice::create([
         'product_id' => $product->id,
         'type' => 'yearly',
-        'stripe_id' => 'price_yearly',
+        'provider_id' => 'price_yearly',
         'amount' => 10000,
         'currency' => 'eur',
         'recurring' => ['interval' => 'year'],
@@ -108,7 +108,7 @@ it('archives recurring price correctly', function () {
     ]);
 
     $priceResource = m::mock(PriceResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('price')->andReturn($priceResource);
 
     $priceResource->shouldReceive('archive')
@@ -124,17 +124,17 @@ it('archives recurring price correctly', function () {
 });
 
 it('archives price with nickname correctly', function () {
-    $product = StripeProduct::create([
+    $product = BillingProduct::create([
         'key' => 'test_product',
-        'stripe_id' => 'prod_123',
+        'provider_id' => 'prod_123',
         'name' => 'Test Product',
         'active' => true,
     ]);
 
-    $price = StripePrice::create([
+    $price = BillingPrice::create([
         'product_id' => $product->id,
         'type' => 'default',
-        'stripe_id' => 'price_456',
+        'provider_id' => 'price_456',
         'amount' => 1000,
         'currency' => 'eur',
         'nickname' => 'Special Price',
@@ -142,7 +142,7 @@ it('archives price with nickname correctly', function () {
     ]);
 
     $priceResource = m::mock(PriceResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('price')->andReturn($priceResource);
 
     $priceResource->shouldReceive('archive')
@@ -158,24 +158,24 @@ it('archives price with nickname correctly', function () {
 });
 
 it('throws exception when Stripe API fails', function () {
-    $product = StripeProduct::create([
+    $product = BillingProduct::create([
         'key' => 'test_product',
-        'stripe_id' => 'prod_123',
+        'provider_id' => 'prod_123',
         'name' => 'Test Product',
         'active' => true,
     ]);
 
-    $price = StripePrice::create([
+    $price = BillingPrice::create([
         'product_id' => $product->id,
         'type' => 'default',
-        'stripe_id' => 'price_456',
+        'provider_id' => 'price_456',
         'amount' => 1000,
         'currency' => 'eur',
         'active' => true,
     ]);
 
     $priceResource = m::mock(PriceResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('price')->andReturn($priceResource);
 
     $priceResource->shouldReceive('archive')

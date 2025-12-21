@@ -1,11 +1,11 @@
 <?php
 
 use Mockery as m;
-use ValentinMorice\LaravelStripeRepository\Contracts\ProductResourceInterface;
-use ValentinMorice\LaravelStripeRepository\Contracts\StripeClientInterface;
-use ValentinMorice\LaravelStripeRepository\DataTransferObjects\ProductDefinition;
-use ValentinMorice\LaravelStripeRepository\Models\StripeProduct;
-use ValentinMorice\LaravelStripeRepository\Services\ProductService;
+use ValentinMorice\LaravelBillingRepository\Contracts\ProductResourceInterface;
+use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
+use ValentinMorice\LaravelBillingRepository\DataTransferObjects\ProductDefinition;
+use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
+use ValentinMorice\LaravelBillingRepository\Stripe\Services\ProductService;
 
 beforeEach(function () {
     $this->artisan('migrate', ['--database' => 'testing']);
@@ -17,7 +17,7 @@ afterEach(function () {
 
 it('creates new product when it does not exist', function () {
     $productResource = m::mock(ProductResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('product')->andReturn($productResource);
 
     $productResource->shouldReceive('create')
@@ -32,17 +32,17 @@ it('creates new product when it does not exist', function () {
 
     expect($result)->toBeArray()
         ->and($result['action'])->toBe('created')
-        ->and($result['product'])->toBeInstanceOf(StripeProduct::class)
+        ->and($result['product'])->toBeInstanceOf(BillingProduct::class)
         ->and($result['product']->key)->toBe('test_product')
-        ->and($result['product']->stripe_id)->toBe('prod_123')
+        ->and($result['product']->provider_id)->toBe('prod_123')
         ->and($result['product']->name)->toBe('Test Product')
         ->and($result['product']->description)->toBeNull()
-        ->and(StripeProduct::count())->toBe(1);
+        ->and(BillingProduct::count())->toBe(1);
 });
 
 it('creates product with description', function () {
     $productResource = m::mock(ProductResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('product')->andReturn($productResource);
 
     $productResource->shouldReceive('create')
@@ -60,21 +60,21 @@ it('creates product with description', function () {
     $result = $service->sync('product_key', $definition);
 
     expect($result['action'])->toBe('created')
-        ->and($result['product']->stripe_id)->toBe('prod_456')
+        ->and($result['product']->provider_id)->toBe('prod_456')
         ->and($result['product']->description)->toBe('Product description');
 });
 
 it('returns unchanged when product already exists with same data', function () {
-    StripeProduct::create([
+    BillingProduct::create([
         'key' => 'existing_product',
-        'stripe_id' => 'prod_existing',
+        'provider_id' => 'prod_existing',
         'name' => 'Existing Product',
         'description' => 'Same description',
         'active' => true,
     ]);
 
     $productResource = m::mock(ProductResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('product')->andReturn($productResource);
 
     $productResource->shouldNotReceive('create');
@@ -90,19 +90,19 @@ it('returns unchanged when product already exists with same data', function () {
     $result = $service->sync('existing_product', $definition);
 
     expect($result['action'])->toBe('unchanged')
-        ->and(StripeProduct::count())->toBe(1);
+        ->and(BillingProduct::count())->toBe(1);
 });
 
 it('updates product when name changes', function () {
-    StripeProduct::create([
+    BillingProduct::create([
         'key' => 'my_product',
-        'stripe_id' => 'prod_abc',
+        'provider_id' => 'prod_abc',
         'name' => 'Old Name',
         'active' => true,
     ]);
 
     $productResource = m::mock(ProductResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('product')->andReturn($productResource);
 
     $productResource->shouldReceive('update')
@@ -122,16 +122,16 @@ it('updates product when name changes', function () {
 });
 
 it('updates product when description changes', function () {
-    StripeProduct::create([
+    BillingProduct::create([
         'key' => 'my_product',
-        'stripe_id' => 'prod_xyz',
+        'provider_id' => 'prod_xyz',
         'name' => 'Product Name',
         'description' => 'Old description',
         'active' => true,
     ]);
 
     $productResource = m::mock(ProductResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('product')->andReturn($productResource);
 
     $productResource->shouldReceive('update')
@@ -153,16 +153,16 @@ it('updates product when description changes', function () {
 });
 
 it('updates product when both name and description change', function () {
-    StripeProduct::create([
+    BillingProduct::create([
         'key' => 'my_product',
-        'stripe_id' => 'prod_123',
+        'provider_id' => 'prod_123',
         'name' => 'Old Name',
         'description' => 'Old description',
         'active' => true,
     ]);
 
     $productResource = m::mock(ProductResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('product')->andReturn($productResource);
 
     $productResource->shouldReceive('update')
@@ -185,29 +185,29 @@ it('updates product when both name and description change', function () {
 });
 
 it('archives products not in configured keys list', function () {
-    StripeProduct::create([
+    BillingProduct::create([
         'key' => 'product_1',
-        'stripe_id' => 'prod_1',
+        'provider_id' => 'prod_1',
         'name' => 'Product 1',
         'active' => true,
     ]);
 
-    StripeProduct::create([
+    BillingProduct::create([
         'key' => 'product_2',
-        'stripe_id' => 'prod_2',
+        'provider_id' => 'prod_2',
         'name' => 'Product 2',
         'active' => true,
     ]);
 
-    StripeProduct::create([
+    BillingProduct::create([
         'key' => 'product_3',
-        'stripe_id' => 'prod_3',
+        'provider_id' => 'prod_3',
         'name' => 'Product 3',
         'active' => true,
     ]);
 
     $productResource = m::mock(ProductResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('product')->andReturn($productResource);
 
     // Expect product_2 and product_3 to be archived
@@ -225,27 +225,27 @@ it('archives products not in configured keys list', function () {
     $archivedCount = $service->archiveRemoved(['product_1']);
 
     expect($archivedCount)->toBe(2)
-        ->and(StripeProduct::where('active', true)->count())->toBe(1)
-        ->and(StripeProduct::where('active', false)->count())->toBe(2);
+        ->and(BillingProduct::where('active', true)->count())->toBe(1)
+        ->and(BillingProduct::where('active', false)->count())->toBe(2);
 });
 
 it('does not archive products that are in configured list', function () {
-    StripeProduct::create([
+    BillingProduct::create([
         'key' => 'product_1',
-        'stripe_id' => 'prod_1',
+        'provider_id' => 'prod_1',
         'name' => 'Product 1',
         'active' => true,
     ]);
 
-    StripeProduct::create([
+    BillingProduct::create([
         'key' => 'product_2',
-        'stripe_id' => 'prod_2',
+        'provider_id' => 'prod_2',
         'name' => 'Product 2',
         'active' => true,
     ]);
 
     $productResource = m::mock(ProductResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('product')->andReturn($productResource);
 
     $productResource->shouldNotReceive('archive');
@@ -254,26 +254,26 @@ it('does not archive products that are in configured list', function () {
     $archivedCount = $service->archiveRemoved(['product_1', 'product_2']);
 
     expect($archivedCount)->toBe(0)
-        ->and(StripeProduct::where('active', true)->count())->toBe(2);
+        ->and(BillingProduct::where('active', true)->count())->toBe(2);
 });
 
 it('does not archive already inactive products', function () {
-    StripeProduct::create([
+    BillingProduct::create([
         'key' => 'active_product',
-        'stripe_id' => 'prod_active',
+        'provider_id' => 'prod_active',
         'name' => 'Active Product',
         'active' => true,
     ]);
 
-    StripeProduct::create([
+    BillingProduct::create([
         'key' => 'inactive_product',
-        'stripe_id' => 'prod_inactive',
+        'provider_id' => 'prod_inactive',
         'name' => 'Inactive Product',
         'active' => false,
     ]);
 
     $productResource = m::mock(ProductResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('product')->andReturn($productResource);
 
     $productResource->shouldNotReceive('archive');

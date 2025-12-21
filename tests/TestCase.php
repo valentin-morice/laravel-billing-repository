@@ -1,10 +1,10 @@
 <?php
 
-namespace ValentinMorice\LaravelStripeRepository\Tests;
+namespace ValentinMorice\LaravelBillingRepository\Tests;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
-use ValentinMorice\LaravelStripeRepository\LaravelStripeRepositoryServiceProvider;
+use ValentinMorice\LaravelBillingRepository\LaravelBillingRepositoryServiceProvider;
 
 class TestCase extends Orchestra
 {
@@ -13,14 +13,14 @@ class TestCase extends Orchestra
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'ValentinMorice\\LaravelStripeRepository\\Database\\Factories\\'.class_basename($modelName).'Factory'
+            fn (string $modelName) => 'ValentinMorice\\LaravelBillingRepository\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
     }
 
     protected function getPackageProviders($app)
     {
         return [
-            LaravelStripeRepositoryServiceProvider::class,
+            LaravelBillingRepositoryServiceProvider::class,
         ];
     }
 

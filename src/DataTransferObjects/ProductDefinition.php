@@ -1,6 +1,6 @@
 <?php
 
-namespace ValentinMorice\LaravelStripeRepository\DataTransferObjects;
+namespace ValentinMorice\LaravelBillingRepository\DataTransferObjects;
 
 readonly class ProductDefinition
 {

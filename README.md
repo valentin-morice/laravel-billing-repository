@@ -1,60 +1,99 @@
-# Config-as-code for Stripe in Laravel.
+# Config-as-code for billing providers in Laravel
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/valentin-morice/laravel-stripe-repository.svg?style=flat-square)](https://packagist.org/packages/valentin-morice/laravel-stripe-repository)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/valentin-morice/laravel-stripe-repository/ci.yml?branch=main&label=tests&style=flat-square)](https://github.com/valentin-morice/laravel-stripe-repository/actions?query=workflow%3Aci+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/valentin-morice/laravel-stripe-repository/ci.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/valentin-morice/laravel-stripe-repository/actions?query=workflow%3Aci+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/valentin-morice/laravel-stripe-repository.svg?style=flat-square)](https://packagist.org/packages/valentin-morice/laravel-stripe-repository)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/valentin-morice/laravel-billing-repository.svg?style=flat-square)](https://packagist.org/packages/valentin-morice/laravel-billing-repository)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/valentin-morice/laravel-billing-repository/ci.yml?branch=main&label=tests&style=flat-square)](https://github.com/valentin-morice/laravel-billing-repository/actions?query=workflow%3Aci+branch%3Amain)
+[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/valentin-morice/laravel-billing-repository/ci.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/valentin-morice/laravel-billing-repository/actions?query=workflow%3Aci+branch%3Amain)
+[![Total Downloads](https://img.shields.io/packagist/dt/valentin-morice/laravel-billing-repository.svg?style=flat-square)](https://packagist.org/packages/valentin-morice/laravel-billing-repository)
 
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
+A Laravel package that provides config-as-code for billing providers. Define your products, prices, and billing settings in versioned configuration files, then plan and apply changes with artisan commands (similar to Terraform's workflow).
 
-## Support us
+**Currently supported providers:**
+- Stripe (more providers coming soon)
 
-[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/laravel-stripe-repository.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/laravel-stripe-repository)
+## Features
 
-We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
-
-We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
+- **Provider-agnostic architecture**: Easy to add support for new billing providers
+- **Config-as-code**: Define products and prices in PHP configuration files
+- **Version control**: Track billing changes alongside your application code
+- **Deploy workflow**: Plan and apply billing changes with simple artisan commands
+- **Type-safe**: Leverages PHP DTOs for configuration validation
 
 ## Installation
 
 You can install the package via composer:
 
 ```bash
-composer require valentin-morice/laravel-stripe-repository
+composer require valentin-morice/laravel-billing-repository
 ```
 
 You can publish and run the migrations with:
 
 ```bash
-php artisan vendor:publish --tag="laravel-stripe-repository-migrations"
+php artisan vendor:publish --tag="laravel-billing-repository-migrations"
 php artisan migrate
 ```
 
 You can publish the config file with:
 
 ```bash
-php artisan vendor:publish --tag="laravel-stripe-repository-config"
+php artisan vendor:publish --tag="laravel-billing-repository-config"
 ```
 
-This is the contents of the published config file:
+## Configuration
+
+After publishing the config file, you'll find it at `config/billing.php`. Here's an example configuration:
 
 ```php
+use ValentinMorice\LaravelBillingRepository\DataTransferObjects\PriceDefinition;
+use ValentinMorice\LaravelBillingRepository\DataTransferObjects\ProductDefinition;
+
 return [
+    'provider' => env('BILLING_PROVIDER', 'stripe'),
+    'api_key' => env('BILLING_API_KEY'),
+
+    'products' => [
+        'premium' => new ProductDefinition(
+            name: 'Premium Subscription',
+            prices: [
+                'monthly' => new PriceDefinition(
+                    amount: 999,
+                    currency: 'eur',
+                    recurring: ['interval' => 'month'],
+                ),
+                'yearly' => new PriceDefinition(
+                    amount: 9900,
+                    currency: 'eur',
+                    recurring: ['interval' => 'year'],
+                ),
+            ],
+        ),
+    ],
 ];
-```
-
-Optionally, you can publish the views using
-
-```bash
-php artisan vendor:publish --tag="laravel-stripe-repository-views"
 ```
 
 ## Usage
 
-```php
-$laravelStripeRepository = new ValentinMorice\LaravelStripeRepository();
-echo $laravelStripeRepository->echoPhrase('Hello, ValentinMorice!');
+After configuring your products and prices, deploy them to your billing provider:
+
+```bash
+php artisan billing:deploy
 ```
+
+This command will:
+1. Compare your configuration with the current state in your billing provider
+2. Show you a plan of changes to be made
+3. Apply the changes to your billing provider
+4. Sync the changes to your local database
+
+## Architecture
+
+The package uses a provider adapter pattern to support multiple billing providers:
+
+- `ProviderAdapter`: Interface that all billing providers must implement
+- `ProviderClientInterface`: Interface for provider-specific API clients
+- `StripeAdapter`: Stripe implementation (ships with the package)
+
+Adding a new provider is as simple as implementing the `ProviderAdapter` interface.
 
 ## Testing
 

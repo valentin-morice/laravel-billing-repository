@@ -1,6 +1,6 @@
 <?php
 
-namespace ValentinMorice\LaravelStripeRepository\Models;
+namespace ValentinMorice\LaravelBillingRepository\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -8,18 +8,18 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * @property int $id
  * @property string $key
- * @property string $stripe_id
+ * @property string $provider_id
  * @property string $name
  * @property string|null $description
  * @property bool $active
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  */
-class StripeProduct extends Model
+class BillingProduct extends Model
 {
     protected $fillable = [
         'key',
-        'stripe_id',
+        'provider_id',
         'name',
         'description',
         'active',
@@ -34,6 +34,6 @@ class StripeProduct extends Model
 
     public function prices(): HasMany
     {
-        return $this->hasMany(StripePrice::class, 'product_id');
+        return $this->hasMany(BillingPrice::class, 'product_id');
     }
 }

@@ -1,10 +1,10 @@
 <?php
 
 use Mockery as m;
-use ValentinMorice\LaravelStripeRepository\Actions\Product\ArchiveAction;
-use ValentinMorice\LaravelStripeRepository\Contracts\ProductResourceInterface;
-use ValentinMorice\LaravelStripeRepository\Contracts\StripeClientInterface;
-use ValentinMorice\LaravelStripeRepository\Models\StripeProduct;
+use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Product\ArchiveAction;
+use ValentinMorice\LaravelBillingRepository\Contracts\ProductResourceInterface;
+use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
+use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 
 beforeEach(function () {
     $this->artisan('migrate', ['--database' => 'testing']);
@@ -15,15 +15,15 @@ afterEach(function () {
 });
 
 it('archives product in Stripe and database', function () {
-    $product = StripeProduct::create([
+    $product = BillingProduct::create([
         'key' => 'test_product',
-        'stripe_id' => 'prod_123',
+        'provider_id' => 'prod_123',
         'name' => 'Test Product',
         'active' => true,
     ]);
 
     $productResource = m::mock(ProductResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('product')->andReturn($productResource);
 
     $productResource->shouldReceive('archive')
@@ -34,23 +34,23 @@ it('archives product in Stripe and database', function () {
     $action = new ArchiveAction($client);
     $result = $action->handle($product);
 
-    expect($result)->toBeInstanceOf(StripeProduct::class)
+    expect($result)->toBeInstanceOf(BillingProduct::class)
         ->and($result->active)->toBeFalse()
-        ->and($result->stripe_id)->toBe('prod_123')
-        ->and(StripeProduct::where('active', false)->count())->toBe(1);
+        ->and($result->provider_id)->toBe('prod_123')
+        ->and(BillingProduct::where('active', false)->count())->toBe(1);
 });
 
 it('preserves other product attributes when archiving', function () {
-    $product = StripeProduct::create([
+    $product = BillingProduct::create([
         'key' => 'test_product',
-        'stripe_id' => 'prod_123',
+        'provider_id' => 'prod_123',
         'name' => 'Test Product',
         'description' => 'A test product',
         'active' => true,
     ]);
 
     $productResource = m::mock(ProductResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('product')->andReturn($productResource);
 
     $productResource->shouldReceive('archive')
@@ -68,15 +68,15 @@ it('preserves other product attributes when archiving', function () {
 });
 
 it('throws exception when Stripe API fails', function () {
-    $product = StripeProduct::create([
+    $product = BillingProduct::create([
         'key' => 'test_product',
-        'stripe_id' => 'prod_123',
+        'provider_id' => 'prod_123',
         'name' => 'Test Product',
         'active' => true,
     ]);
 
     $productResource = m::mock(ProductResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('product')->andReturn($productResource);
 
     $productResource->shouldReceive('archive')

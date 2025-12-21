@@ -1,9 +1,9 @@
 <?php
 
-namespace ValentinMorice\LaravelStripeRepository\Stripe;
+namespace ValentinMorice\LaravelBillingRepository\Stripe;
 
 use Stripe\Product;
-use ValentinMorice\LaravelStripeRepository\Contracts\ProductResourceInterface;
+use ValentinMorice\LaravelBillingRepository\Contracts\ProductResourceInterface;
 
 class ProductResource implements ProductResourceInterface
 {

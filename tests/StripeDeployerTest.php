@@ -1,14 +1,14 @@
 <?php
 
 use Mockery as m;
-use ValentinMorice\LaravelStripeRepository\Contracts\PriceResourceInterface;
-use ValentinMorice\LaravelStripeRepository\Contracts\ProductResourceInterface;
-use ValentinMorice\LaravelStripeRepository\Contracts\StripeClientInterface;
-use ValentinMorice\LaravelStripeRepository\DataTransferObjects\PriceDefinition;
-use ValentinMorice\LaravelStripeRepository\DataTransferObjects\ProductDefinition;
-use ValentinMorice\LaravelStripeRepository\Models\StripePrice;
-use ValentinMorice\LaravelStripeRepository\Models\StripeProduct;
-use ValentinMorice\LaravelStripeRepository\StripeDeployer;
+use ValentinMorice\LaravelBillingRepository\Contracts\PriceResourceInterface;
+use ValentinMorice\LaravelBillingRepository\Contracts\ProductResourceInterface;
+use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
+use ValentinMorice\LaravelBillingRepository\DataTransferObjects\PriceDefinition;
+use ValentinMorice\LaravelBillingRepository\DataTransferObjects\ProductDefinition;
+use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
+use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
+use ValentinMorice\LaravelBillingRepository\Deployer;
 
 beforeEach(function () {
     $this->artisan('migrate', ['--database' => 'testing']);
@@ -31,7 +31,7 @@ it('orchestrates product and price creation end-to-end', function () {
         ->with('prod_123', 1000, 'eur', null, null)
         ->andReturn('price_456');
 
-    config(['stripe-repository.products' => [
+    config(['billing.products' => [
         'test_product' => new ProductDefinition(
             name: 'Test Product',
             prices: [
@@ -40,7 +40,7 @@ it('orchestrates product and price creation end-to-end', function () {
         ),
     ]]);
 
-    $deployer = new StripeDeployer($client);
+    $deployer = new Deployer($client);
     $results = $deployer->deploy();
 
     expect($results['products']['created'])->toBe(1)
@@ -51,8 +51,8 @@ it('orchestrates product and price creation end-to-end', function () {
         ->and($results['prices']['updated'])->toBe(0)
         ->and($results['prices']['unchanged'])->toBe(0)
         ->and($results['prices']['archived'])->toBe(0)
-        ->and(StripeProduct::count())->toBe(1)
-        ->and(StripePrice::count())->toBe(1);
+        ->and(BillingProduct::count())->toBe(1)
+        ->and(BillingPrice::count())->toBe(1);
 });
 
 it('iterates through multiple products and prices correctly', function () {
@@ -67,7 +67,7 @@ it('iterates through multiple products and prices correctly', function () {
         ->withArgs(fn ($productId, $amount, $currency, $recurring, $nickname) => true)
         ->andReturn('price_1', 'price_2', 'price_3');
 
-    config(['stripe-repository.products' => [
+    config(['billing.products' => [
         'product_1' => new ProductDefinition(
             name: 'Product 1',
             prices: [
@@ -83,7 +83,7 @@ it('iterates through multiple products and prices correctly', function () {
         ),
     ]]);
 
-    $deployer = new StripeDeployer($client);
+    $deployer = new Deployer($client);
     $results = $deployer->deploy();
 
     expect($results['products']['created'])->toBe(2)
@@ -94,8 +94,8 @@ it('iterates through multiple products and prices correctly', function () {
         ->and($results['prices']['updated'])->toBe(0)
         ->and($results['prices']['unchanged'])->toBe(0)
         ->and($results['prices']['archived'])->toBe(0)
-        ->and(StripeProduct::count())->toBe(2)
-        ->and(StripePrice::count())->toBe(3);
+        ->and(BillingProduct::count())->toBe(2)
+        ->and(BillingPrice::count())->toBe(3);
 });
 
 it('handles empty configuration gracefully', function () {
@@ -104,9 +104,9 @@ it('handles empty configuration gracefully', function () {
     $productResource->shouldNotReceive('create');
     $priceResource->shouldNotReceive('create');
 
-    config(['stripe-repository.products' => []]);
+    config(['billing.products' => []]);
 
-    $deployer = new StripeDeployer($client);
+    $deployer = new Deployer($client);
     $results = $deployer->deploy();
 
     expect($results['products']['created'])->toBe(0)
@@ -121,27 +121,27 @@ it('handles empty configuration gracefully', function () {
 
 it('archives prices that are removed from config', function () {
     // First create a product with two prices
-    $product = StripeProduct::create([
+    $product = BillingProduct::create([
         'key' => 'test_product',
-        'stripe_id' => 'prod_123',
+        'provider_id' => 'prod_123',
         'name' => 'Test Product',
         'active' => true,
     ]);
 
-    StripePrice::create([
+    BillingPrice::create([
         'product_id' => $product->id,
         'type' => 'monthly',
-        'stripe_id' => 'price_monthly',
+        'provider_id' => 'price_monthly',
         'amount' => 1000,
         'currency' => 'eur',
         'recurring' => ['interval' => 'month'],
         'active' => true,
     ]);
 
-    StripePrice::create([
+    BillingPrice::create([
         'product_id' => $product->id,
         'type' => 'yearly',
-        'stripe_id' => 'price_yearly',
+        'provider_id' => 'price_yearly',
         'amount' => 10000,
         'currency' => 'eur',
         'recurring' => ['interval' => 'year'],
@@ -162,7 +162,7 @@ it('archives prices that are removed from config', function () {
         ->with('price_yearly')
         ->andReturn((object) ['id' => 'price_yearly', 'active' => false]);
 
-    config(['stripe-repository.products' => [
+    config(['billing.products' => [
         'test_product' => new ProductDefinition(
             name: 'Test Product',
             prices: [
@@ -172,30 +172,30 @@ it('archives prices that are removed from config', function () {
         ),
     ]]);
 
-    $deployer = new StripeDeployer($client);
+    $deployer = new Deployer($client);
     $results = $deployer->deploy();
 
     expect($results['products']['unchanged'])->toBe(1)
         ->and($results['products']['archived'])->toBe(0)
         ->and($results['prices']['unchanged'])->toBe(1) // monthly unchanged
         ->and($results['prices']['archived'])->toBe(1) // yearly archived
-        ->and(StripePrice::count())->toBe(2)
-        ->and(StripePrice::where('active', true)->count())->toBe(1)
-        ->and(StripePrice::where('active', false)->count())->toBe(1);
+        ->and(BillingPrice::count())->toBe(2)
+        ->and(BillingPrice::where('active', true)->count())->toBe(1)
+        ->and(BillingPrice::where('active', false)->count())->toBe(1);
 });
 
 it('archives products that are removed from config', function () {
     // Create two products
-    StripeProduct::create([
+    BillingProduct::create([
         'key' => 'product_1',
-        'stripe_id' => 'prod_1',
+        'provider_id' => 'prod_1',
         'name' => 'Product 1',
         'active' => true,
     ]);
 
-    StripeProduct::create([
+    BillingProduct::create([
         'key' => 'product_2',
-        'stripe_id' => 'prod_2',
+        'provider_id' => 'prod_2',
         'name' => 'Product 2',
         'active' => true,
     ]);
@@ -212,7 +212,7 @@ it('archives products that are removed from config', function () {
         ->with('prod_2')
         ->andReturn((object) ['id' => 'prod_2', 'active' => false]);
 
-    config(['stripe-repository.products' => [
+    config(['billing.products' => [
         'product_1' => new ProductDefinition(
             name: 'Product 1',
             prices: [],
@@ -220,14 +220,14 @@ it('archives products that are removed from config', function () {
         // product_2 removed
     ]]);
 
-    $deployer = new StripeDeployer($client);
+    $deployer = new Deployer($client);
     $results = $deployer->deploy();
 
     expect($results['products']['unchanged'])->toBe(1) // product_1 unchanged
         ->and($results['products']['archived'])->toBe(1) // product_2 archived
-        ->and(StripeProduct::count())->toBe(2)
-        ->and(StripeProduct::where('active', true)->count())->toBe(1)
-        ->and(StripeProduct::where('active', false)->count())->toBe(1);
+        ->and(BillingProduct::count())->toBe(2)
+        ->and(BillingProduct::where('active', true)->count())->toBe(1)
+        ->and(BillingProduct::where('active', false)->count())->toBe(1);
 });
 
 // Helper function to mock Stripe client
@@ -235,7 +235,7 @@ function mockStripeClient(): array
 {
     $productResource = m::mock(ProductResourceInterface::class);
     $priceResource = m::mock(PriceResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
 
     $client->shouldReceive('product')->andReturn($productResource);
     $client->shouldReceive('price')->andReturn($priceResource);

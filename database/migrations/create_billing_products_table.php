@@ -8,22 +8,22 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('stripe_products', function (Blueprint $table) {
+        Schema::create('billing_products', function (Blueprint $table) {
             $table->id();
             $table->string('key')->unique();
-            $table->string('stripe_id')->unique();
+            $table->string('provider_id')->unique();
             $table->string('name');
             $table->text('description')->nullable();
             $table->boolean('active')->default(true);
             $table->timestamps();
 
             $table->index('key');
-            $table->index('stripe_id');
+            $table->index('provider_id');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('stripe_products');
+        Schema::dropIfExists('billing_products');
     }
 };

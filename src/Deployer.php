@@ -1,15 +1,15 @@
 <?php
 
-namespace ValentinMorice\LaravelStripeRepository;
+namespace ValentinMorice\LaravelBillingRepository;
 
-use ValentinMorice\LaravelStripeRepository\Contracts\StripeClientInterface;
-use ValentinMorice\LaravelStripeRepository\Services\PriceService;
-use ValentinMorice\LaravelStripeRepository\Services\ProductService;
+use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
+use ValentinMorice\LaravelBillingRepository\Stripe\Services\PriceService;
+use ValentinMorice\LaravelBillingRepository\Stripe\Services\ProductService;
 
-class StripeDeployer
+class Deployer
 {
     public function __construct(
-        protected StripeClientInterface $client,
+        protected ProviderClientInterface $client,
         protected ?ProductService $productService = null,
         protected ?PriceService $priceService = null,
     ) {
@@ -65,6 +65,6 @@ class StripeDeployer
 
     protected function getProductDefinitions(): array
     {
-        return config('stripe-repository.products', []);
+        return config('billing.products', []);
     }
 }

@@ -1,11 +1,11 @@
 <?php
 
 use Mockery as m;
-use ValentinMorice\LaravelStripeRepository\Actions\Product\UpdateAction;
-use ValentinMorice\LaravelStripeRepository\Contracts\ProductResourceInterface;
-use ValentinMorice\LaravelStripeRepository\Contracts\StripeClientInterface;
-use ValentinMorice\LaravelStripeRepository\DataTransferObjects\ProductDefinition;
-use ValentinMorice\LaravelStripeRepository\Models\StripeProduct;
+use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Product\UpdateAction;
+use ValentinMorice\LaravelBillingRepository\Contracts\ProductResourceInterface;
+use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
+use ValentinMorice\LaravelBillingRepository\DataTransferObjects\ProductDefinition;
+use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 
 beforeEach(function () {
     $this->artisan('migrate', ['--database' => 'testing']);
@@ -16,16 +16,16 @@ afterEach(function () {
 });
 
 it('updates product name when name changes', function () {
-    $product = StripeProduct::create([
+    $product = BillingProduct::create([
         'key' => 'test_product',
-        'stripe_id' => 'prod_123',
+        'provider_id' => 'prod_123',
         'name' => 'Old Name',
         'description' => 'Same description',
         'active' => true,
     ]);
 
     $productResource = m::mock(ProductResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('product')->andReturn($productResource);
 
     $productResource->shouldReceive('update')
@@ -47,16 +47,16 @@ it('updates product name when name changes', function () {
 });
 
 it('updates product description when description changes', function () {
-    $product = StripeProduct::create([
+    $product = BillingProduct::create([
         'key' => 'test_product',
-        'stripe_id' => 'prod_123',
+        'provider_id' => 'prod_123',
         'name' => 'Same Name',
         'description' => 'Old description',
         'active' => true,
     ]);
 
     $productResource = m::mock(ProductResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('product')->andReturn($productResource);
 
     $productResource->shouldReceive('update')
@@ -78,16 +78,16 @@ it('updates product description when description changes', function () {
 });
 
 it('updates both name and description when both change', function () {
-    $product = StripeProduct::create([
+    $product = BillingProduct::create([
         'key' => 'test_product',
-        'stripe_id' => 'prod_123',
+        'provider_id' => 'prod_123',
         'name' => 'Old Name',
         'description' => 'Old description',
         'active' => true,
     ]);
 
     $productResource = m::mock(ProductResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('product')->andReturn($productResource);
 
     $productResource->shouldReceive('update')
@@ -109,16 +109,16 @@ it('updates both name and description when both change', function () {
 });
 
 it('returns product unchanged when nothing changes', function () {
-    $product = StripeProduct::create([
+    $product = BillingProduct::create([
         'key' => 'test_product',
-        'stripe_id' => 'prod_123',
+        'provider_id' => 'prod_123',
         'name' => 'Same Name',
         'description' => 'Same description',
         'active' => true,
     ]);
 
     $productResource = m::mock(ProductResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('product')->andReturn($productResource);
 
     $productResource->shouldNotReceive('update');
@@ -138,16 +138,16 @@ it('returns product unchanged when nothing changes', function () {
 });
 
 it('handles null description correctly', function () {
-    $product = StripeProduct::create([
+    $product = BillingProduct::create([
         'key' => 'test_product',
-        'stripe_id' => 'prod_123',
+        'provider_id' => 'prod_123',
         'name' => 'Same Name',
         'description' => null,
         'active' => true,
     ]);
 
     $productResource = m::mock(ProductResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('product')->andReturn($productResource);
 
     $productResource->shouldNotReceive('update');
@@ -164,15 +164,15 @@ it('handles null description correctly', function () {
 });
 
 it('throws exception when Stripe API fails', function () {
-    $product = StripeProduct::create([
+    $product = BillingProduct::create([
         'key' => 'test_product',
-        'stripe_id' => 'prod_123',
+        'provider_id' => 'prod_123',
         'name' => 'Old Name',
         'active' => true,
     ]);
 
     $productResource = m::mock(ProductResourceInterface::class);
-    $client = m::mock(StripeClientInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('product')->andReturn($productResource);
 
     $productResource->shouldReceive('update')

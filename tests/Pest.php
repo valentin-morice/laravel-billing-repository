@@ -1,5 +1,5 @@
 <?php
 
-use ValentinMorice\LaravelStripeRepository\Tests\TestCase;
+use ValentinMorice\LaravelBillingRepository\Tests\TestCase;
 
 uses(TestCase::class)->in(__DIR__);

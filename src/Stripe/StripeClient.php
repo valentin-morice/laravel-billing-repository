@@ -1,12 +1,12 @@
 <?php
 
-namespace ValentinMorice\LaravelStripeRepository\Stripe;
+namespace ValentinMorice\LaravelBillingRepository\Stripe;
 
-use ValentinMorice\LaravelStripeRepository\Contracts\PriceResourceInterface;
-use ValentinMorice\LaravelStripeRepository\Contracts\ProductResourceInterface;
-use ValentinMorice\LaravelStripeRepository\Contracts\StripeClientInterface;
+use ValentinMorice\LaravelBillingRepository\Contracts\PriceResourceInterface;
+use ValentinMorice\LaravelBillingRepository\Contracts\ProductResourceInterface;
+use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
 
-class StripeClient implements StripeClientInterface
+class StripeClient implements ProviderClientInterface
 {
     public function __construct(
         protected ?ProductResourceInterface $productResource = null,

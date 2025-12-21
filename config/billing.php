@@ -1,31 +1,42 @@
 <?php
 
-use ValentinMorice\LaravelStripeRepository\DataTransferObjects\PriceDefinition;
-use ValentinMorice\LaravelStripeRepository\DataTransferObjects\ProductDefinition;
+use ValentinMorice\LaravelBillingRepository\DataTransferObjects\PriceDefinition;
+use ValentinMorice\LaravelBillingRepository\DataTransferObjects\ProductDefinition;
 
-// config for ValentinMorice/LaravelStripeRepository
+// config for ValentinMorice/LaravelBillingRepository
 return [
 
     /*
     |--------------------------------------------------------------------------
-    | Stripe API Key
+    | Billing Provider
     |--------------------------------------------------------------------------
     |
-    | Your Stripe secret API key. Set this in your .env file.
-    |
+    | The billing provider to use. Currently supported: stripe
     */
 
-    'api_key' => env('STRIPE_SECRET'),
+    'provider' => env('BILLING_PROVIDER', 'stripe'),
 
     /*
     |--------------------------------------------------------------------------
-    | Stripe Products Configuration
+    | Billing Provider API Key
     |--------------------------------------------------------------------------
     |
-    | Define your Stripe products and their associated prices here.
+    | Your billing provider API key. Set this in your .env file.
+    | For Stripe, use your secret key. Other providers may use different keys.
+    |
+    */
+
+    'api_key' => env('BILLING_API_KEY', env('STRIPE_SECRET')),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Products Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Define your products and their associated prices here.
     | The array key becomes the product identifier (stored in the database).
     |
-    | After defining products, run: php artisan stripe:deploy
+    | After defining products, run: php artisan billing:deploy
     |
     */
 

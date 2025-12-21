@@ -1,12 +1,15 @@
 {
-    "name": "valentin-morice/laravel-stripe-repository",
-    "description": "Config-as-code for Stripe in Laravel. Define products, prices, tax rates, webhooks, and billing settings in versioned files, then plan/apply with artisan commands.",
+    "name": "valentin-morice/laravel-billing-repository",
+    "description": "Config-as-code for billing providers (Stripe, Paddle, etc.) in Laravel. Define products, prices, tax rates, webhooks, and billing settings in versioned files, then plan/apply with artisan commands.",
     "keywords": [
         "Valentin Morice",
         "laravel",
-        "laravel-stripe-repository"
+        "laravel-billing-repository",
+        "stripe",
+        "billing",
+        "config-as-code"
     ],
-    "homepage": "https://github.com/valentin-morice/laravel-stripe-repository",
+    "homepage": "https://github.com/valentin-morice/laravel-billing-repository",
     "license": "MIT",
     "authors": [
         {
@@ -36,13 +39,13 @@
     },
     "autoload": {
         "psr-4": {
-            "ValentinMorice\\LaravelStripeRepository\\": "src/",
-            "ValentinMorice\\LaravelStripeRepository\\Database\\Factories\\": "database/factories/"
+            "ValentinMorice\\LaravelBillingRepository\\": "src/",
+            "ValentinMorice\\LaravelBillingRepository\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "ValentinMorice\\LaravelStripeRepository\\Tests\\": "tests/",
+            "ValentinMorice\\LaravelBillingRepository\\Tests\\": "tests/",
             "Workbench\\App\\": "workbench/app/"
         }
     },
@@ -64,10 +67,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "ValentinMorice\\LaravelStripeRepository\\LaravelStripeRepositoryServiceProvider"
+                "ValentinMorice\\LaravelBillingRepository\\LaravelBillingRepositoryServiceProvider"
             ],
             "aliases": {
-                "LaravelStripeRepository": "ValentinMorice\\LaravelStripeRepository\\Facades\\LaravelStripeRepository"
+                "LaravelBillingRepository": "ValentinMorice\\LaravelBillingRepository\\Facades\\LaravelBillingRepository"
             }
         }
     },

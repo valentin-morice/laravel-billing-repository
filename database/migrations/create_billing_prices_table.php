@@ -8,11 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('stripe_prices', function (Blueprint $table) {
+        Schema::create('billing_prices', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_id')->constrained('stripe_products')->onDelete('cascade');
+            $table->foreignId('product_id')->constrained('billing_products')->onDelete('cascade');
             $table->string('type');
-            $table->string('stripe_id')->unique();
+            $table->string('provider_id')->unique();
             $table->integer('amount');
             $table->string('currency', 3);
             $table->json('recurring')->nullable();
@@ -20,13 +20,13 @@ return new class extends Migration
             $table->boolean('active')->default(true);
             $table->timestamps();
 
-            $table->index('stripe_id');
+            $table->index('provider_id');
             $table->index(['product_id', 'type']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('stripe_prices');
+        Schema::dropIfExists('billing_prices');
     }
 };

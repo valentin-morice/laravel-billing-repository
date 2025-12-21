@@ -1,7 +1,7 @@
 <?php
 
 use Mockery as m;
-use ValentinMorice\LaravelStripeRepository\Actions\Deployer\Price\ArchiveAction;
+use ValentinMorice\LaravelStripeRepository\Actions\Price\ArchiveAction;
 use ValentinMorice\LaravelStripeRepository\Contracts\PriceResourceInterface;
 use ValentinMorice\LaravelStripeRepository\Contracts\StripeClientInterface;
 use ValentinMorice\LaravelStripeRepository\Models\StripePrice;

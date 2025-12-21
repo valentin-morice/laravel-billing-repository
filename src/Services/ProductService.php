@@ -3,9 +3,9 @@
 namespace ValentinMorice\LaravelStripeRepository\Services;
 
 use Illuminate\Database\Eloquent\Collection;
-use ValentinMorice\LaravelStripeRepository\Actions\Deployer\Product\ArchiveAction;
-use ValentinMorice\LaravelStripeRepository\Actions\Deployer\Product\CreateAction;
-use ValentinMorice\LaravelStripeRepository\Actions\Deployer\Product\UpdateAction;
+use ValentinMorice\LaravelStripeRepository\Actions\Product\ArchiveAction;
+use ValentinMorice\LaravelStripeRepository\Actions\Product\CreateAction;
+use ValentinMorice\LaravelStripeRepository\Actions\Product\UpdateAction;
 use ValentinMorice\LaravelStripeRepository\Contracts\StripeClientInterface;
 use ValentinMorice\LaravelStripeRepository\DataTransferObjects\ProductDefinition;
 use ValentinMorice\LaravelStripeRepository\Models\StripeProduct;

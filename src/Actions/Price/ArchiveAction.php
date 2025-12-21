@@ -1,6 +1,6 @@
 <?php
 
-namespace ValentinMorice\LaravelStripeRepository\Actions\Deployer\Price;
+namespace ValentinMorice\LaravelStripeRepository\Actions\Price;
 
 use ValentinMorice\LaravelStripeRepository\Contracts\StripeClientInterface;
 use ValentinMorice\LaravelStripeRepository\Models\StripePrice;

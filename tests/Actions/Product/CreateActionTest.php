@@ -1,7 +1,7 @@
 <?php
 
 use Mockery as m;
-use ValentinMorice\LaravelStripeRepository\Actions\Deployer\Product\CreateAction;
+use ValentinMorice\LaravelStripeRepository\Actions\Product\CreateAction;
 use ValentinMorice\LaravelStripeRepository\Contracts\ProductResourceInterface;
 use ValentinMorice\LaravelStripeRepository\Contracts\StripeClientInterface;
 use ValentinMorice\LaravelStripeRepository\DataTransferObjects\ProductDefinition;

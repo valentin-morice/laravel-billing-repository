@@ -3,8 +3,8 @@
 namespace ValentinMorice\LaravelStripeRepository\Services;
 
 use Illuminate\Database\Eloquent\Collection;
-use ValentinMorice\LaravelStripeRepository\Actions\Deployer\Price\ArchiveAction;
-use ValentinMorice\LaravelStripeRepository\Actions\Deployer\Price\CreateAction;
+use ValentinMorice\LaravelStripeRepository\Actions\Price\ArchiveAction;
+use ValentinMorice\LaravelStripeRepository\Actions\Price\CreateAction;
 use ValentinMorice\LaravelStripeRepository\Contracts\StripeClientInterface;
 use ValentinMorice\LaravelStripeRepository\DataTransferObjects\PriceDefinition;
 use ValentinMorice\LaravelStripeRepository\Models\StripePrice;

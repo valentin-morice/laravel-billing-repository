@@ -22,7 +22,7 @@ class LaravelBillingRepositoryServiceProvider extends PackageServiceProvider
 
         // Register provider adapter based on config
         $this->app->singleton(ProviderAdapter::class, function ($app) {
-            $provider = config('billing.provider', 'stripe');
+            $provider = config('billing.provider') ?? 'stripe';
 
             return match ($provider) {
                 'stripe' => new StripeAdapter,

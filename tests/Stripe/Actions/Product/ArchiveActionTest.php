@@ -14,7 +14,7 @@ afterEach(function () {
     m::close();
 });
 
-it('archives product in Stripe and database', function () {
+it('archives product and stores in database', function () {
     $product = BillingProduct::create([
         'key' => 'test_product',
         'provider_id' => 'prod_123',
@@ -67,7 +67,7 @@ it('preserves other product attributes when archiving', function () {
         ->and($result->active)->toBeFalse();
 });
 
-it('throws exception when Stripe API fails', function () {
+it('throws exception when provider API fails', function () {
     $product = BillingProduct::create([
         'key' => 'test_product',
         'provider_id' => 'prod_123',

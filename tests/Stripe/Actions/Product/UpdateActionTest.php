@@ -163,7 +163,7 @@ it('handles null description correctly', function () {
     expect($result->description)->toBeNull();
 });
 
-it('throws exception when Stripe API fails', function () {
+it('throws exception when provider API fails', function () {
     $product = BillingProduct::create([
         'key' => 'test_product',
         'provider_id' => 'prod_123',

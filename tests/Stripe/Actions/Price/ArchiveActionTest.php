@@ -15,7 +15,7 @@ afterEach(function () {
     m::close();
 });
 
-it('archives price in Stripe and database', function () {
+it('archives price and stores in database', function () {
     $product = BillingProduct::create([
         'key' => 'test_product',
         'provider_id' => 'prod_123',
@@ -157,7 +157,7 @@ it('archives price with nickname correctly', function () {
         ->and($result->active)->toBeFalse();
 });
 
-it('throws exception when Stripe API fails', function () {
+it('throws exception when provider API fails', function () {
     $product = BillingProduct::create([
         'key' => 'test_product',
         'provider_id' => 'prod_123',

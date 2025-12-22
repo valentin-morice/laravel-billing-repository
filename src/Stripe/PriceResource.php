@@ -2,11 +2,15 @@
 
 namespace ValentinMorice\LaravelBillingRepository\Stripe;
 
+use Stripe\Exception\ApiErrorException;
 use Stripe\Price;
 use ValentinMorice\LaravelBillingRepository\Contracts\PriceResourceInterface;
 
 class PriceResource implements PriceResourceInterface
 {
+    /**
+     * @throws ApiErrorException
+     */
     public function create(
         string $productId,
         int $amount,
@@ -33,6 +37,9 @@ class PriceResource implements PriceResourceInterface
         return $price->id;
     }
 
+    /**
+     * @throws ApiErrorException
+     */
     public function archive(string $priceId): object
     {
         return Price::update($priceId, ['active' => false]);

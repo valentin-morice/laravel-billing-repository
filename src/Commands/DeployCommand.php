@@ -20,7 +20,6 @@ class DeployCommand extends Command
 
     public function handle(): int
     {
-        // Validate configuration before deployment
         if (! config('billing.api_key')) {
             $this->error('Billing API key is not configured.');
             $this->line('Please set BILLING_API_KEY in your .env file or publish the config.');

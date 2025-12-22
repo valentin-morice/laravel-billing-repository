@@ -16,7 +16,7 @@ afterEach(function () {
     m::close();
 });
 
-it('creates one-time price in Stripe and database', function () {
+it('creates one-time price and stores in database', function () {
     $product = BillingProduct::create([
         'key' => 'test_product',
         'provider_id' => 'prod_123',
@@ -192,7 +192,7 @@ it('handles multiple price types for same product', function () {
         ->and(BillingPrice::count())->toBe(2);
 });
 
-it('throws exception when Stripe API fails', function () {
+it('throws exception when provider API fails', function () {
     $product = BillingProduct::create([
         'key' => 'test_product',
         'provider_id' => 'prod_123',

@@ -15,7 +15,7 @@ afterEach(function () {
     m::close();
 });
 
-it('creates product in Stripe and database', function () {
+it('creates product and stores in database', function () {
     $productResource = m::mock(ProductResourceInterface::class);
     $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('product')->andReturn($productResource);
@@ -65,7 +65,7 @@ it('creates product with description', function () {
         ->and($result->provider_id)->toBe('prod_456');
 });
 
-it('throws exception when Stripe API fails', function () {
+it('throws exception when provider API fails', function () {
     $productResource = m::mock(ProductResourceInterface::class);
     $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('product')->andReturn($productResource);

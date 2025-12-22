@@ -2,9 +2,11 @@
 
 namespace ValentinMorice\LaravelBillingRepository\Stripe;
 
-use ValentinMorice\LaravelBillingRepository\Contracts\PriceResourceInterface;
-use ValentinMorice\LaravelBillingRepository\Contracts\ProductResourceInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
+use ValentinMorice\LaravelBillingRepository\Contracts\Resources\PriceResourceInterface;
+use ValentinMorice\LaravelBillingRepository\Contracts\Resources\ProductResourceInterface;
+use ValentinMorice\LaravelBillingRepository\Stripe\Resources\PriceResource;
+use ValentinMorice\LaravelBillingRepository\Stripe\Resources\ProductResource;
 
 class StripeClient implements ProviderClientInterface
 {

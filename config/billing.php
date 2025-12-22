@@ -1,7 +1,7 @@
 <?php
 
-use ValentinMorice\LaravelBillingRepository\DataTransferObjects\PriceDefinition;
-use ValentinMorice\LaravelBillingRepository\DataTransferObjects\ProductDefinition;
+use ValentinMorice\LaravelBillingRepository\Data\PriceDefinition;
+use ValentinMorice\LaravelBillingRepository\Data\ProductDefinition;
 
 // config for ValentinMorice/LaravelBillingRepository
 return [

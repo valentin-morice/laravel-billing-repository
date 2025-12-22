@@ -2,10 +2,10 @@
 
 namespace ValentinMorice\LaravelBillingRepository\Stripe;
 
-use ValentinMorice\LaravelBillingRepository\Contracts\ProviderAdapter;
+use ValentinMorice\LaravelBillingRepository\Contracts\ProviderAdapterInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
 
-class StripeAdapter implements ProviderAdapter
+class StripeAdapter implements ProviderAdapterInterface
 {
     protected ?ProviderClientInterface $client = null;
 

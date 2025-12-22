@@ -5,7 +5,7 @@ namespace ValentinMorice\LaravelBillingRepository\Contracts;
 /**
  * Provider adapter interface - each billing provider implements this
  */
-interface ProviderAdapter
+interface ProviderAdapterInterface
 {
     /**
      * Get the provider name (e.g., 'stripe', 'paddle')

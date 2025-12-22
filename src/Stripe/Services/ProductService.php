@@ -4,13 +4,14 @@ namespace ValentinMorice\LaravelBillingRepository\Stripe\Services;
 
 use Illuminate\Database\Eloquent\Collection;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
-use ValentinMorice\LaravelBillingRepository\DataTransferObjects\ProductDefinition;
+use ValentinMorice\LaravelBillingRepository\Contracts\Services\ProductServiceInterface;
+use ValentinMorice\LaravelBillingRepository\Data\ProductDefinition;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Product\ArchiveAction;
 use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Product\CreateAction;
 use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Product\UpdateAction;
 
-class ProductService
+class ProductService implements ProductServiceInterface
 {
     public function __construct(
         protected ProviderClientInterface $client,

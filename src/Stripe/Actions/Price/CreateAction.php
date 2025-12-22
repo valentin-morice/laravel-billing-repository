@@ -3,7 +3,7 @@
 namespace ValentinMorice\LaravelBillingRepository\Stripe\Actions\Price;
 
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
-use ValentinMorice\LaravelBillingRepository\DataTransferObjects\PriceDefinition;
+use ValentinMorice\LaravelBillingRepository\Data\PriceDefinition;
 use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 

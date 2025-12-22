@@ -44,8 +44,8 @@ php artisan vendor:publish --tag="laravel-billing-repository-config"
 After publishing the config file, you'll find it at `config/billing.php`. Here's an example configuration:
 
 ```php
-use ValentinMorice\LaravelBillingRepository\DataTransferObjects\PriceDefinition;
-use ValentinMorice\LaravelBillingRepository\DataTransferObjects\ProductDefinition;
+use ValentinMorice\LaravelBillingRepository\Data\PriceDefinition;
+use ValentinMorice\LaravelBillingRepository\Data\ProductDefinition;
 
 return [
     'provider' => env('BILLING_PROVIDER', 'stripe'),

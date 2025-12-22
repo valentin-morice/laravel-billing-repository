@@ -2,19 +2,16 @@
 
 namespace ValentinMorice\LaravelBillingRepository;
 
-use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
-use ValentinMorice\LaravelBillingRepository\Stripe\Services\PriceService;
-use ValentinMorice\LaravelBillingRepository\Stripe\Services\ProductService;
+use ValentinMorice\LaravelBillingRepository\Contracts\Services\PriceServiceInterface;
+use ValentinMorice\LaravelBillingRepository\Contracts\Services\ProductServiceInterface;
 
 class Deployer
 {
     public function __construct(
-        protected ProviderClientInterface $client,
-        protected ?ProductService $productService = null,
-        protected ?PriceService $priceService = null,
+        protected ProductServiceInterface $productService,
+        protected PriceServiceInterface $priceService,
     ) {
-        $this->productService ??= new ProductService($client);
-        $this->priceService ??= new PriceService($client);
+        //
     }
 
     public function deploy(): array

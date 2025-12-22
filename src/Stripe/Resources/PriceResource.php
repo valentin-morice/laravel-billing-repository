@@ -1,10 +1,10 @@
 <?php
 
-namespace ValentinMorice\LaravelBillingRepository\Stripe;
+namespace ValentinMorice\LaravelBillingRepository\Stripe\Resources;
 
 use Stripe\Exception\ApiErrorException;
 use Stripe\Price;
-use ValentinMorice\LaravelBillingRepository\Contracts\PriceResourceInterface;
+use ValentinMorice\LaravelBillingRepository\Contracts\Resources\PriceResourceInterface;
 
 class PriceResource implements PriceResourceInterface
 {

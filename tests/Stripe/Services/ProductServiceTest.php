@@ -1,9 +1,9 @@
 <?php
 
 use Mockery as m;
-use ValentinMorice\LaravelBillingRepository\Contracts\ProductResourceInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
-use ValentinMorice\LaravelBillingRepository\DataTransferObjects\ProductDefinition;
+use ValentinMorice\LaravelBillingRepository\Contracts\Resources\ProductResourceInterface;
+use ValentinMorice\LaravelBillingRepository\Data\ProductDefinition;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 use ValentinMorice\LaravelBillingRepository\Stripe\Services\ProductService;
 
@@ -65,12 +65,11 @@ it('creates product with description', function () {
 });
 
 it('returns unchanged when product already exists with same data', function () {
-    BillingProduct::create([
+    BillingProduct::factory()->create([
         'key' => 'existing_product',
         'provider_id' => 'prod_existing',
         'name' => 'Existing Product',
         'description' => 'Same description',
-        'active' => true,
     ]);
 
     $productResource = m::mock(ProductResourceInterface::class);
@@ -94,11 +93,11 @@ it('returns unchanged when product already exists with same data', function () {
 });
 
 it('updates product when name changes', function () {
-    BillingProduct::create([
+    BillingProduct::factory()->create([
         'key' => 'my_product',
         'provider_id' => 'prod_abc',
         'name' => 'Old Name',
-        'active' => true,
+        'description' => null,
     ]);
 
     $productResource = m::mock(ProductResourceInterface::class);
@@ -122,12 +121,11 @@ it('updates product when name changes', function () {
 });
 
 it('updates product when description changes', function () {
-    BillingProduct::create([
+    BillingProduct::factory()->create([
         'key' => 'my_product',
         'provider_id' => 'prod_xyz',
         'name' => 'Product Name',
         'description' => 'Old description',
-        'active' => true,
     ]);
 
     $productResource = m::mock(ProductResourceInterface::class);
@@ -153,12 +151,11 @@ it('updates product when description changes', function () {
 });
 
 it('updates product when both name and description change', function () {
-    BillingProduct::create([
+    BillingProduct::factory()->create([
         'key' => 'my_product',
         'provider_id' => 'prod_123',
         'name' => 'Old Name',
         'description' => 'Old description',
-        'active' => true,
     ]);
 
     $productResource = m::mock(ProductResourceInterface::class);
@@ -185,25 +182,22 @@ it('updates product when both name and description change', function () {
 });
 
 it('archives products not in configured keys list', function () {
-    BillingProduct::create([
+    BillingProduct::factory()->create([
         'key' => 'product_1',
         'provider_id' => 'prod_1',
         'name' => 'Product 1',
-        'active' => true,
     ]);
 
-    BillingProduct::create([
+    BillingProduct::factory()->create([
         'key' => 'product_2',
         'provider_id' => 'prod_2',
         'name' => 'Product 2',
-        'active' => true,
     ]);
 
-    BillingProduct::create([
+    BillingProduct::factory()->create([
         'key' => 'product_3',
         'provider_id' => 'prod_3',
         'name' => 'Product 3',
-        'active' => true,
     ]);
 
     $productResource = m::mock(ProductResourceInterface::class);
@@ -230,18 +224,16 @@ it('archives products not in configured keys list', function () {
 });
 
 it('does not archive products that are in configured list', function () {
-    BillingProduct::create([
+    BillingProduct::factory()->create([
         'key' => 'product_1',
         'provider_id' => 'prod_1',
         'name' => 'Product 1',
-        'active' => true,
     ]);
 
-    BillingProduct::create([
+    BillingProduct::factory()->create([
         'key' => 'product_2',
         'provider_id' => 'prod_2',
         'name' => 'Product 2',
-        'active' => true,
     ]);
 
     $productResource = m::mock(ProductResourceInterface::class);
@@ -258,18 +250,16 @@ it('does not archive products that are in configured list', function () {
 });
 
 it('does not archive already inactive products', function () {
-    BillingProduct::create([
+    BillingProduct::factory()->create([
         'key' => 'active_product',
         'provider_id' => 'prod_active',
         'name' => 'Active Product',
-        'active' => true,
     ]);
 
-    BillingProduct::create([
+    BillingProduct::factory()->archived()->create([
         'key' => 'inactive_product',
         'provider_id' => 'prod_inactive',
         'name' => 'Inactive Product',
-        'active' => false,
     ]);
 
     $productResource = m::mock(ProductResourceInterface::class);

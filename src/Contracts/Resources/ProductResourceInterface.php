@@ -1,6 +1,6 @@
 <?php
 
-namespace ValentinMorice\LaravelBillingRepository\Contracts;
+namespace ValentinMorice\LaravelBillingRepository\Contracts\Resources;
 
 interface ProductResourceInterface
 {

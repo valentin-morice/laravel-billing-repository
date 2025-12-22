@@ -1,9 +1,9 @@
 <?php
 
 use Mockery as m;
-use ValentinMorice\LaravelBillingRepository\Contracts\PriceResourceInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
-use ValentinMorice\LaravelBillingRepository\DataTransferObjects\PriceDefinition;
+use ValentinMorice\LaravelBillingRepository\Contracts\Resources\PriceResourceInterface;
+use ValentinMorice\LaravelBillingRepository\Data\PriceDefinition;
 use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 use ValentinMorice\LaravelBillingRepository\Stripe\Services\PriceService;
@@ -17,11 +17,10 @@ afterEach(function () {
 });
 
 it('creates new price when it does not exist', function () {
-    $product = BillingProduct::create([
+    $product = BillingProduct::factory()->create([
         'key' => 'test_product',
         'provider_id' => 'prod_123',
         'name' => 'Test Product',
-        'active' => true,
     ]);
 
     $priceResource = m::mock(PriceResourceInterface::class);
@@ -47,11 +46,10 @@ it('creates new price when it does not exist', function () {
 });
 
 it('creates recurring price with interval', function () {
-    $product = BillingProduct::create([
+    $product = BillingProduct::factory()->create([
         'key' => 'subscription',
         'provider_id' => 'prod_sub',
         'name' => 'Subscription',
-        'active' => true,
     ]);
 
     $priceResource = m::mock(PriceResourceInterface::class);
@@ -77,21 +75,18 @@ it('creates recurring price with interval', function () {
 });
 
 it('returns unchanged when price already exists with same data', function () {
-    $product = BillingProduct::create([
+    $product = BillingProduct::factory()->create([
         'key' => 'test_product',
         'provider_id' => 'prod_123',
         'name' => 'Test Product',
-        'active' => true,
     ]);
 
-    BillingPrice::create([
-        'product_id' => $product->id,
+    BillingPrice::factory()->forProduct($product)->create([
         'type' => 'default',
         'provider_id' => 'price_existing',
         'amount' => 1000,
         'currency' => 'eur',
         'recurring' => null,
-        'active' => true,
     ]);
 
     $priceResource = m::mock(PriceResourceInterface::class);
@@ -111,21 +106,18 @@ it('returns unchanged when price already exists with same data', function () {
 });
 
 it('archives old price and creates new when amount changes', function () {
-    $product = BillingProduct::create([
+    $product = BillingProduct::factory()->create([
         'key' => 'test_product',
         'provider_id' => 'prod_123',
         'name' => 'Test Product',
-        'active' => true,
     ]);
 
-    BillingPrice::create([
-        'product_id' => $product->id,
+    BillingPrice::factory()->forProduct($product)->create([
         'type' => 'default',
         'provider_id' => 'price_old',
         'amount' => 1000,
         'currency' => 'eur',
         'recurring' => null,
-        'active' => true,
     ]);
 
     $priceResource = m::mock(PriceResourceInterface::class);
@@ -158,21 +150,18 @@ it('archives old price and creates new when amount changes', function () {
 });
 
 it('archives and recreates when currency changes', function () {
-    $product = BillingProduct::create([
+    $product = BillingProduct::factory()->create([
         'key' => 'test_product',
         'provider_id' => 'prod_123',
         'name' => 'Test Product',
-        'active' => true,
     ]);
 
-    BillingPrice::create([
-        'product_id' => $product->id,
+    BillingPrice::factory()->forProduct($product)->create([
         'type' => 'default',
         'provider_id' => 'price_old',
         'amount' => 1000,
         'currency' => 'eur',
         'recurring' => null,
-        'active' => true,
     ]);
 
     $priceResource = m::mock(PriceResourceInterface::class);
@@ -199,21 +188,18 @@ it('archives and recreates when currency changes', function () {
 });
 
 it('archives and recreates when recurring interval changes', function () {
-    $product = BillingProduct::create([
+    $product = BillingProduct::factory()->create([
         'key' => 'subscription',
         'provider_id' => 'prod_sub',
         'name' => 'Subscription',
-        'active' => true,
     ]);
 
-    BillingPrice::create([
-        'product_id' => $product->id,
+    BillingPrice::factory()->forProduct($product)->create([
         'type' => 'subscription',
         'provider_id' => 'price_old',
         'amount' => 999,
         'currency' => 'eur',
         'recurring' => ['interval' => 'month'],
-        'active' => true,
     ]);
 
     $priceResource = m::mock(PriceResourceInterface::class);
@@ -243,11 +229,10 @@ it('archives and recreates when recurring interval changes', function () {
 });
 
 it('handles multiple price types for same product', function () {
-    $product = BillingProduct::create([
+    $product = BillingProduct::factory()->create([
         'key' => 'test_product',
         'provider_id' => 'prod_123',
         'name' => 'Test Product',
-        'active' => true,
     ]);
 
     $priceResource = m::mock(PriceResourceInterface::class);
@@ -270,29 +255,24 @@ it('handles multiple price types for same product', function () {
 });
 
 it('archives removed prices not in configured list', function () {
-    $product = BillingProduct::create([
+    $product = BillingProduct::factory()->create([
         'key' => 'test_product',
         'provider_id' => 'prod_123',
         'name' => 'Test Product',
-        'active' => true,
     ]);
 
-    BillingPrice::create([
-        'product_id' => $product->id,
+    BillingPrice::factory()->forProduct($product)->create([
         'type' => 'monthly',
         'provider_id' => 'price_monthly',
         'amount' => 1000,
         'currency' => 'eur',
-        'active' => true,
     ]);
 
-    BillingPrice::create([
-        'product_id' => $product->id,
+    BillingPrice::factory()->forProduct($product)->create([
         'type' => 'yearly',
         'provider_id' => 'price_yearly',
         'amount' => 10000,
         'currency' => 'eur',
-        'active' => true,
     ]);
 
     $priceResource = m::mock(PriceResourceInterface::class);
@@ -313,20 +293,17 @@ it('archives removed prices not in configured list', function () {
 });
 
 it('does not archive prices that are in configured list', function () {
-    $product = BillingProduct::create([
+    $product = BillingProduct::factory()->create([
         'key' => 'test_product',
         'provider_id' => 'prod_123',
         'name' => 'Test Product',
-        'active' => true,
     ]);
 
-    BillingPrice::create([
-        'product_id' => $product->id,
+    BillingPrice::factory()->forProduct($product)->create([
         'type' => 'monthly',
         'provider_id' => 'price_monthly',
         'amount' => 1000,
         'currency' => 'eur',
-        'active' => true,
     ]);
 
     $priceResource = m::mock(PriceResourceInterface::class);
@@ -343,11 +320,10 @@ it('does not archive prices that are in configured list', function () {
 });
 
 it('creates price with nickname', function () {
-    $product = BillingProduct::create([
+    $product = BillingProduct::factory()->create([
         'key' => 'test_product',
         'provider_id' => 'prod_123',
         'name' => 'Test Product',
-        'active' => true,
     ]);
 
     $priceResource = m::mock(PriceResourceInterface::class);
@@ -369,21 +345,18 @@ it('creates price with nickname', function () {
 });
 
 it('archives and recreates when nickname changes', function () {
-    $product = BillingProduct::create([
+    $product = BillingProduct::factory()->create([
         'key' => 'test_product',
         'provider_id' => 'prod_123',
         'name' => 'Test Product',
-        'active' => true,
     ]);
 
-    BillingPrice::create([
-        'product_id' => $product->id,
+    BillingPrice::factory()->forProduct($product)->create([
         'type' => 'monthly',
         'provider_id' => 'price_old',
         'amount' => 1000,
         'currency' => 'eur',
         'nickname' => 'Old Nickname',
-        'active' => true,
     ]);
 
     $priceResource = m::mock(PriceResourceInterface::class);

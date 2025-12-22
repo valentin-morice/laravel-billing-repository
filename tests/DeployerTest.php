@@ -1,14 +1,16 @@
 <?php
 
 use Mockery as m;
-use ValentinMorice\LaravelBillingRepository\Contracts\PriceResourceInterface;
-use ValentinMorice\LaravelBillingRepository\Contracts\ProductResourceInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
-use ValentinMorice\LaravelBillingRepository\DataTransferObjects\PriceDefinition;
-use ValentinMorice\LaravelBillingRepository\DataTransferObjects\ProductDefinition;
+use ValentinMorice\LaravelBillingRepository\Contracts\Resources\PriceResourceInterface;
+use ValentinMorice\LaravelBillingRepository\Contracts\Resources\ProductResourceInterface;
+use ValentinMorice\LaravelBillingRepository\Data\PriceDefinition;
+use ValentinMorice\LaravelBillingRepository\Data\ProductDefinition;
 use ValentinMorice\LaravelBillingRepository\Deployer;
 use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
+use ValentinMorice\LaravelBillingRepository\Stripe\Services\PriceService;
+use ValentinMorice\LaravelBillingRepository\Stripe\Services\ProductService;
 
 beforeEach(function () {
     $this->artisan('migrate', ['--database' => 'testing']);
@@ -19,7 +21,7 @@ afterEach(function () {
 });
 
 it('orchestrates product and price creation end-to-end', function () {
-    [$client, $productResource, $priceResource] = mockStripeClient();
+    [$client, $productResource, $priceResource, $productService, $priceService] = mockStripeServices();
 
     $productResource->shouldReceive('create')
         ->once()
@@ -40,7 +42,7 @@ it('orchestrates product and price creation end-to-end', function () {
         ),
     ]]);
 
-    $deployer = new Deployer($client);
+    $deployer = new Deployer($productService, $priceService);
     $results = $deployer->deploy();
 
     expect($results['products']['created'])->toBe(1)
@@ -56,7 +58,7 @@ it('orchestrates product and price creation end-to-end', function () {
 });
 
 it('iterates through multiple products and prices correctly', function () {
-    [$client, $productResource, $priceResource] = mockStripeClient();
+    [$client, $productResource, $priceResource, $productService, $priceService] = mockStripeServices();
 
     $productResource->shouldReceive('create')
         ->twice()
@@ -83,7 +85,7 @@ it('iterates through multiple products and prices correctly', function () {
         ),
     ]]);
 
-    $deployer = new Deployer($client);
+    $deployer = new Deployer($productService, $priceService);
     $results = $deployer->deploy();
 
     expect($results['products']['created'])->toBe(2)
@@ -99,14 +101,14 @@ it('iterates through multiple products and prices correctly', function () {
 });
 
 it('handles empty configuration gracefully', function () {
-    [$client, $productResource, $priceResource] = mockStripeClient();
+    [$client, $productResource, $priceResource, $productService, $priceService] = mockStripeServices();
 
     $productResource->shouldNotReceive('create');
     $priceResource->shouldNotReceive('create');
 
     config(['billing.products' => []]);
 
-    $deployer = new Deployer($client);
+    $deployer = new Deployer($productService, $priceService);
     $results = $deployer->deploy();
 
     expect($results['products']['created'])->toBe(0)
@@ -149,7 +151,7 @@ it('archives prices that are removed from config', function () {
     ]);
 
     // Now configure product with only monthly price (yearly removed)
-    [$client, $productResource, $priceResource] = mockStripeClient();
+    [$client, $productResource, $priceResource, $productService, $priceService] = mockStripeServices();
 
     $productResource->shouldNotReceive('create');
     $productResource->shouldNotReceive('update');
@@ -172,7 +174,7 @@ it('archives prices that are removed from config', function () {
         ),
     ]]);
 
-    $deployer = new Deployer($client);
+    $deployer = new Deployer($productService, $priceService);
     $results = $deployer->deploy();
 
     expect($results['products']['unchanged'])->toBe(1)
@@ -201,7 +203,7 @@ it('archives products that are removed from config', function () {
     ]);
 
     // Configure only product_1 (product_2 removed)
-    [$client, $productResource, $priceResource] = mockStripeClient();
+    [$client, $productResource, $priceResource, $productService, $priceService] = mockStripeServices();
 
     $productResource->shouldNotReceive('create');
     $productResource->shouldNotReceive('update');
@@ -220,7 +222,7 @@ it('archives products that are removed from config', function () {
         // product_2 removed
     ]]);
 
-    $deployer = new Deployer($client);
+    $deployer = new Deployer($productService, $priceService);
     $results = $deployer->deploy();
 
     expect($results['products']['unchanged'])->toBe(1) // product_1 unchanged
@@ -230,8 +232,8 @@ it('archives products that are removed from config', function () {
         ->and(BillingProduct::where('active', false)->count())->toBe(1);
 });
 
-// Helper function to mock Stripe client
-function mockStripeClient(): array
+// Helper function to mock Stripe services
+function mockStripeServices(): array
 {
     $productResource = m::mock(ProductResourceInterface::class);
     $priceResource = m::mock(PriceResourceInterface::class);
@@ -240,5 +242,8 @@ function mockStripeClient(): array
     $client->shouldReceive('product')->andReturn($productResource);
     $client->shouldReceive('price')->andReturn($priceResource);
 
-    return [$client, $productResource, $priceResource];
+    $productService = new ProductService($client);
+    $priceService = new PriceService($client);
+
+    return [$client, $productResource, $priceResource, $productService, $priceService];
 }

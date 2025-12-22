@@ -3,7 +3,6 @@
 namespace ValentinMorice\LaravelBillingRepository\Commands;
 
 use Illuminate\Console\Command;
-use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
 use ValentinMorice\LaravelBillingRepository\Deployer;
 
 class DeployCommand extends Command
@@ -13,7 +12,7 @@ class DeployCommand extends Command
     public $description = 'Deploy billing products and prices from config to your provider';
 
     public function __construct(
-        protected ProviderClientInterface $client
+        protected Deployer $deployer
     ) {
         parent::__construct();
     }
@@ -30,8 +29,7 @@ class DeployCommand extends Command
         $this->info('Deploying billing products...');
 
         try {
-            $deployer = new Deployer($this->client);
-            $results = $deployer->deploy();
+            $results = $this->deployer->deploy();
 
             $this->newLine();
             $this->line('<fg=green>Products:</>');

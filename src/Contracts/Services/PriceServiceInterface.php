@@ -5,7 +5,6 @@ namespace ValentinMorice\LaravelBillingRepository\Contracts\Services;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\PriceDefinition;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Service\PriceArchiveResult;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Service\PriceSyncResult;
-use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 
 /**

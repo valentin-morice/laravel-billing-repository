@@ -7,7 +7,7 @@ use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 readonly class ProductArchiveResult
 {
     /**
-     * @param array<int, BillingProduct> $archivedProducts
+     * @param  array<int, BillingProduct>  $archivedProducts
      */
     public function __construct(
         public array $archivedProducts,

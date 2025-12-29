@@ -4,7 +4,6 @@ namespace ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\Product;
 
 use ValentinMorice\LaravelBillingRepository\Contracts\Services\ProductServiceInterface;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\DeployContext;
-use ValentinMorice\LaravelBillingRepository\Data\Enum\ChangeTypeEnum;
 use ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\Abstract\AbstractProcessStage;
 
 class ProcessProductChangesStage extends AbstractProcessStage

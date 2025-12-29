@@ -5,7 +5,6 @@ namespace ValentinMorice\LaravelBillingRepository\Contracts\Services;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\ProductDefinition;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Service\ProductArchiveResult;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Service\ProductSyncResult;
-use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 
 /**
  * Provider-agnostic product service interface

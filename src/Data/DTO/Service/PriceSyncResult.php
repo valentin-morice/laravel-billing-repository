@@ -8,7 +8,7 @@ use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
 readonly class PriceSyncResult
 {
     /**
-     * @param array<string, array{old: mixed, new: mixed}> $changes
+     * @param  array<string, array{old: mixed, new: mixed}>  $changes
      */
     public function __construct(
         public ChangeTypeEnum $action,

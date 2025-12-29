@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpMixedReturnTypeCanBeReducedInspection */
+<?php
+
+/** @noinspection PhpMixedReturnTypeCanBeReducedInspection */
 
 namespace ValentinMorice\LaravelBillingRepository\Stripe\Concerns;
 
@@ -20,6 +22,7 @@ trait RetriesStripeRequests
      * Execute a Stripe API call with retry logic using Laravel's retry helper
      *
      * @template T
+     *
      * @param  callable(): T  $callback
      * @return T
      *

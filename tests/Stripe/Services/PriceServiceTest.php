@@ -6,7 +6,6 @@ use ValentinMorice\LaravelBillingRepository\Contracts\Resources\PriceResourceInt
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\PriceDefinition;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Service\PriceArchiveResult;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Service\PriceSyncResult;
-use ValentinMorice\LaravelBillingRepository\Data\Enum\ChangeTypeEnum;
 use ValentinMorice\LaravelBillingRepository\Deployer\Actions\DetectChangesAction;
 use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;

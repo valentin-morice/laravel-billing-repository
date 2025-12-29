@@ -6,7 +6,6 @@ use ValentinMorice\LaravelBillingRepository\Contracts\Resources\ProductResourceI
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\ProductDefinition;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Service\ProductArchiveResult;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Service\ProductSyncResult;
-use ValentinMorice\LaravelBillingRepository\Data\Enum\ChangeTypeEnum;
 use ValentinMorice\LaravelBillingRepository\Deployer\Actions\DetectChangesAction;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 use ValentinMorice\LaravelBillingRepository\Stripe\Services\ProductService;

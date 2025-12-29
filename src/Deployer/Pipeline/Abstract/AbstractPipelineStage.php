@@ -15,7 +15,6 @@ abstract class AbstractPipelineStage
      *
      * @param  DeployContext  $context  The deployment context
      * @param  Closure  $next  The next stage in the pipeline
-     * @return mixed
      */
     abstract public function handle(DeployContext $context, Closure $next): mixed;
 }

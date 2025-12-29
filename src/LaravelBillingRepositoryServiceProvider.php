@@ -51,7 +51,7 @@ class LaravelBillingRepositoryServiceProvider extends PackageServiceProvider imp
      */
     private function registerProviderBinding(string $interface, array $implementations): void
     {
-        $this->app->singleton($interface, function ($app) use ($implementations, $interface) {
+        $this->app->singleton($interface, function ($app) use ($implementations) {
             $provider = config('billing.provider');
 
             if ($provider === null) {

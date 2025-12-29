@@ -1,6 +1,6 @@
 <?php
 
-namespace ValentinMorice\LaravelBillingRepository\Data;
+namespace ValentinMorice\LaravelBillingRepository\Data\DTO\Config;
 
 readonly class ProductDefinition
 {

@@ -2,14 +2,18 @@
 
 namespace ValentinMorice\LaravelBillingRepository\Stripe\Resources;
 
-use Stripe\Exception\ApiErrorException;
 use Stripe\Price;
+use Throwable;
 use ValentinMorice\LaravelBillingRepository\Contracts\Resources\PriceResourceInterface;
+use ValentinMorice\LaravelBillingRepository\Exceptions\Provider\ProviderException;
+use ValentinMorice\LaravelBillingRepository\Stripe\Concerns\RetriesStripeRequests;
 
 class PriceResource implements PriceResourceInterface
 {
+    use RetriesStripeRequests;
+
     /**
-     * @throws ApiErrorException
+     * @throws ProviderException|Throwable
      */
     public function create(
         string $productId,
@@ -18,30 +22,32 @@ class PriceResource implements PriceResourceInterface
         ?array $recurring = null,
         ?string $nickname = null
     ): string {
-        $data = [
-            'product' => $productId,
-            'unit_amount' => $amount,
-            'currency' => $currency,
-        ];
+        return $this->retryable(function () use ($productId, $amount, $currency, $recurring, $nickname) {
+            $data = [
+                'product' => $productId,
+                'unit_amount' => $amount,
+                'currency' => $currency,
+            ];
 
-        if ($recurring) {
-            $data['recurring'] = $recurring;
-        }
+            if ($recurring) {
+                $data['recurring'] = $recurring;
+            }
 
-        if ($nickname) {
-            $data['nickname'] = $nickname;
-        }
+            if ($nickname) {
+                $data['nickname'] = $nickname;
+            }
 
-        $price = Price::create($data);
+            $price = Price::create($data);
 
-        return $price->id;
+            return $price->id;
+        });
     }
 
     /**
-     * @throws ApiErrorException
+     * @throws ProviderException|Throwable
      */
     public function archive(string $priceId): object
     {
-        return Price::update($priceId, ['active' => false]);
+        return $this->retryable(fn () => Price::update($priceId, ['active' => false]));
     }
 }

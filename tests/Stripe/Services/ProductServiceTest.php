@@ -3,7 +3,11 @@
 use Mockery as m;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\Resources\ProductResourceInterface;
-use ValentinMorice\LaravelBillingRepository\Data\ProductDefinition;
+use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\ProductDefinition;
+use ValentinMorice\LaravelBillingRepository\Data\DTO\Service\ProductArchiveResult;
+use ValentinMorice\LaravelBillingRepository\Data\DTO\Service\ProductSyncResult;
+use ValentinMorice\LaravelBillingRepository\Data\Enum\ChangeTypeEnum;
+use ValentinMorice\LaravelBillingRepository\Deployer\Actions\DetectChangesAction;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 use ValentinMorice\LaravelBillingRepository\Stripe\Services\ProductService;
 
@@ -25,18 +29,18 @@ it('creates new product when it does not exist', function () {
         ->with('Test Product', null)
         ->andReturn('prod_123');
 
-    $service = new ProductService($client);
+    $service = new ProductService($client, new DetectChangesAction);
     $definition = new ProductDefinition(name: 'Test Product', prices: []);
 
     $result = $service->sync('test_product', $definition);
 
-    expect($result)->toBeArray()
-        ->and($result['action'])->toBe('created')
-        ->and($result['product'])->toBeInstanceOf(BillingProduct::class)
-        ->and($result['product']->key)->toBe('test_product')
-        ->and($result['product']->provider_id)->toBe('prod_123')
-        ->and($result['product']->name)->toBe('Test Product')
-        ->and($result['product']->description)->toBeNull()
+    expect($result)->toBeInstanceOf(ProductSyncResult::class)
+        ->and($result->wasCreated())->toBeTrue()
+        ->and($result->product)->toBeInstanceOf(BillingProduct::class)
+        ->and($result->product->key)->toBe('test_product')
+        ->and($result->product->provider_id)->toBe('prod_123')
+        ->and($result->product->name)->toBe('Test Product')
+        ->and($result->product->description)->toBeNull()
         ->and(BillingProduct::count())->toBe(1);
 });
 
@@ -50,7 +54,7 @@ it('creates product with description', function () {
         ->with('Product Name', 'Product description')
         ->andReturn('prod_456');
 
-    $service = new ProductService($client);
+    $service = new ProductService($client, new DetectChangesAction);
     $definition = new ProductDefinition(
         name: 'Product Name',
         prices: [],
@@ -59,9 +63,9 @@ it('creates product with description', function () {
 
     $result = $service->sync('product_key', $definition);
 
-    expect($result['action'])->toBe('created')
-        ->and($result['product']->provider_id)->toBe('prod_456')
-        ->and($result['product']->description)->toBe('Product description');
+    expect($result->wasCreated())->toBeTrue()
+        ->and($result->product->provider_id)->toBe('prod_456')
+        ->and($result->product->description)->toBe('Product description');
 });
 
 it('returns unchanged when product already exists with same data', function () {
@@ -79,7 +83,7 @@ it('returns unchanged when product already exists with same data', function () {
     $productResource->shouldNotReceive('create');
     $productResource->shouldNotReceive('update');
 
-    $service = new ProductService($client);
+    $service = new ProductService($client, new DetectChangesAction);
     $definition = new ProductDefinition(
         name: 'Existing Product',
         prices: [],
@@ -88,7 +92,7 @@ it('returns unchanged when product already exists with same data', function () {
 
     $result = $service->sync('existing_product', $definition);
 
-    expect($result['action'])->toBe('unchanged')
+    expect($result->wasUnchanged())->toBeTrue()
         ->and(BillingProduct::count())->toBe(1);
 });
 
@@ -111,13 +115,14 @@ it('updates product when name changes', function () {
 
     $productResource->shouldNotReceive('create');
 
-    $service = new ProductService($client);
+    $service = new ProductService($client, new DetectChangesAction);
     $definition = new ProductDefinition(name: 'New Name', prices: []);
 
     $result = $service->sync('my_product', $definition);
 
-    expect($result['action'])->toBe('updated')
-        ->and($result['product']->name)->toBe('New Name');
+    expect($result->wasUpdated())->toBeTrue()
+        ->and($result->hasChanges())->toBeTrue()
+        ->and($result->product->name)->toBe('New Name');
 });
 
 it('updates product when description changes', function () {
@@ -137,7 +142,7 @@ it('updates product when description changes', function () {
         ->with('prod_xyz', ['description' => 'New description'])
         ->andReturn((object) ['id' => 'prod_xyz']);
 
-    $service = new ProductService($client);
+    $service = new ProductService($client, new DetectChangesAction);
     $definition = new ProductDefinition(
         name: 'Product Name',
         prices: [],
@@ -146,8 +151,9 @@ it('updates product when description changes', function () {
 
     $result = $service->sync('my_product', $definition);
 
-    expect($result['action'])->toBe('updated')
-        ->and($result['product']->description)->toBe('New description');
+    expect($result->wasUpdated())->toBeTrue()
+        ->and($result->hasChanges())->toBeTrue()
+        ->and($result->product->description)->toBe('New description');
 });
 
 it('updates product when both name and description change', function () {
@@ -167,7 +173,7 @@ it('updates product when both name and description change', function () {
         ->with('prod_123', ['name' => 'New Name', 'description' => 'New description'])
         ->andReturn((object) ['id' => 'prod_123']);
 
-    $service = new ProductService($client);
+    $service = new ProductService($client, new DetectChangesAction);
     $definition = new ProductDefinition(
         name: 'New Name',
         prices: [],
@@ -176,9 +182,10 @@ it('updates product when both name and description change', function () {
 
     $result = $service->sync('my_product', $definition);
 
-    expect($result['action'])->toBe('updated')
-        ->and($result['product']->name)->toBe('New Name')
-        ->and($result['product']->description)->toBe('New description');
+    expect($result->wasUpdated())->toBeTrue()
+        ->and($result->hasChanges())->toBeTrue()
+        ->and($result->product->name)->toBe('New Name')
+        ->and($result->product->description)->toBe('New description');
 });
 
 it('archives products not in configured keys list', function () {
@@ -215,10 +222,12 @@ it('archives products not in configured keys list', function () {
         ->with('prod_3')
         ->andReturn((object) ['id' => 'prod_3']);
 
-    $service = new ProductService($client);
-    $archivedCount = $service->archiveRemoved(['product_1']);
+    $service = new ProductService($client, new DetectChangesAction);
+    $result = $service->archiveRemoved(['product_1']);
 
-    expect($archivedCount)->toBe(2)
+    expect($result)->toBeInstanceOf(ProductArchiveResult::class)
+        ->and($result->count)->toBe(2)
+        ->and($result->archivedProducts)->toHaveCount(2)
         ->and(BillingProduct::where('active', true)->count())->toBe(1)
         ->and(BillingProduct::where('active', false)->count())->toBe(2);
 });
@@ -242,10 +251,11 @@ it('does not archive products that are in configured list', function () {
 
     $productResource->shouldNotReceive('archive');
 
-    $service = new ProductService($client);
-    $archivedCount = $service->archiveRemoved(['product_1', 'product_2']);
+    $service = new ProductService($client, new DetectChangesAction);
+    $result = $service->archiveRemoved(['product_1', 'product_2']);
 
-    expect($archivedCount)->toBe(0)
+    expect($result)->toBeInstanceOf(ProductArchiveResult::class)
+        ->and($result->count)->toBe(0)
         ->and(BillingProduct::where('active', true)->count())->toBe(2);
 });
 
@@ -268,8 +278,9 @@ it('does not archive already inactive products', function () {
 
     $productResource->shouldNotReceive('archive');
 
-    $service = new ProductService($client);
-    $archivedCount = $service->archiveRemoved(['active_product']);
+    $service = new ProductService($client, new DetectChangesAction);
+    $result = $service->archiveRemoved(['active_product']);
 
-    expect($archivedCount)->toBe(0);
+    expect($result)->toBeInstanceOf(ProductArchiveResult::class)
+        ->and($result->count)->toBe(0);
 });

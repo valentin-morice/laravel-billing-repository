@@ -3,7 +3,7 @@
 use Mockery as m;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\Resources\ProductResourceInterface;
-use ValentinMorice\LaravelBillingRepository\Data\ProductDefinition;
+use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\ProductDefinition;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Product\CreateAction;
 
@@ -85,4 +85,35 @@ it('throws exception when provider API fails', function () {
 
     // Verify no database record was created
     expect(BillingProduct::count())->toBe(0);
+});
+
+it('returns existing product when duplicate provider_id is detected', function () {
+    // Create existing product in database
+    $existingProduct = BillingProduct::factory()->create([
+        'key' => 'existing_product',
+        'provider_id' => 'prod_duplicate',
+        'name' => 'Existing Product',
+    ]);
+
+    $productResource = m::mock(ProductResourceInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
+    $client->shouldReceive('product')->andReturn($productResource);
+
+    // Stripe returns same provider_id
+    $productResource->shouldReceive('create')
+        ->once()
+        ->andReturn('prod_duplicate');
+
+    $action = new CreateAction($client);
+    $definition = new ProductDefinition(
+        name: 'New Product Attempt',
+        prices: []
+    );
+
+    $result = $action->handle('new_product_key', $definition);
+
+    // Should return the existing product instead of creating a new one
+    expect($result->id)->toBe($existingProduct->id)
+        ->and($result->provider_id)->toBe('prod_duplicate')
+        ->and(BillingProduct::count())->toBe(1); // Still only 1 product
 });

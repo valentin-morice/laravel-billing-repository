@@ -2,10 +2,10 @@
 
 namespace ValentinMorice\LaravelBillingRepository;
 
+use Illuminate\Contracts\Support\DeferrableProvider;
 use Spatie\LaravelPackageTools\Exceptions\InvalidPackage;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use Stripe\Stripe;
 use ValentinMorice\LaravelBillingRepository\Commands\DeployCommand;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderAdapterInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
@@ -15,7 +15,7 @@ use ValentinMorice\LaravelBillingRepository\Stripe\Services\PriceService as Stri
 use ValentinMorice\LaravelBillingRepository\Stripe\Services\ProductService as StripeProductService;
 use ValentinMorice\LaravelBillingRepository\Stripe\StripeAdapter;
 
-class LaravelBillingRepositoryServiceProvider extends PackageServiceProvider
+class LaravelBillingRepositoryServiceProvider extends PackageServiceProvider implements DeferrableProvider
 {
     /**
      * @throws InvalidPackage
@@ -34,13 +34,12 @@ class LaravelBillingRepositoryServiceProvider extends PackageServiceProvider
             return $app->make(ProviderAdapterInterface::class)->client();
         });
 
-        // Register service implementations
         $this->registerProviderBinding(ProductServiceInterface::class, [
-            'stripe' => fn ($app) => new StripeProductService($app->make(ProviderClientInterface::class)),
+            'stripe' => fn ($app) => $app->make(StripeProductService::class),
         ]);
 
         $this->registerProviderBinding(PriceServiceInterface::class, [
-            'stripe' => fn ($app) => new StripePriceService($app->make(ProviderClientInterface::class)),
+            'stripe' => fn ($app) => $app->make(StripePriceService::class),
         ]);
     }
 
@@ -52,11 +51,21 @@ class LaravelBillingRepositoryServiceProvider extends PackageServiceProvider
      */
     private function registerProviderBinding(string $interface, array $implementations): void
     {
-        $this->app->singleton($interface, function ($app) use ($implementations) {
-            $provider = config('billing.provider') ?? 'stripe';
+        $this->app->singleton($interface, function ($app) use ($implementations, $interface) {
+            $provider = config('billing.provider');
+
+            if ($provider === null) {
+                throw new \RuntimeException(
+                    'Billing provider not configured. Please publish the config file using: '.
+                    'php artisan vendor:publish --tag=laravel-billing-repository-config'
+                );
+            }
 
             if (! isset($implementations[$provider])) {
-                throw new \InvalidArgumentException("Unknown billing provider: {$provider}");
+                $available = implode(', ', array_keys($implementations));
+                throw new \InvalidArgumentException(
+                    "Unknown billing provider: '{$provider}'. Available providers: {$available}"
+                );
             }
 
             return $implementations[$provider]($app);
@@ -80,12 +89,18 @@ class LaravelBillingRepositoryServiceProvider extends PackageServiceProvider
             ->hasCommand(DeployCommand::class);
     }
 
-    public function packageBooted(): void
+    /**
+     * Get the services provided by the provider.
+     *
+     * @return array<int, string>
+     */
+    public function provides(): array
     {
-        $apiKey = config('billing.api_key');
-
-        if ($apiKey) {
-            Stripe::setApiKey($apiKey);
-        }
+        return [
+            ProviderAdapterInterface::class,
+            ProviderClientInterface::class,
+            ProductServiceInterface::class,
+            PriceServiceInterface::class,
+        ];
     }
 }

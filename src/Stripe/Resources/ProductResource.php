@@ -2,46 +2,52 @@
 
 namespace ValentinMorice\LaravelBillingRepository\Stripe\Resources;
 
-use Stripe\Exception\ApiErrorException;
 use Stripe\Product;
+use Throwable;
 use ValentinMorice\LaravelBillingRepository\Contracts\Resources\ProductResourceInterface;
+use ValentinMorice\LaravelBillingRepository\Exceptions\Provider\ProviderException;
+use ValentinMorice\LaravelBillingRepository\Stripe\Concerns\RetriesStripeRequests;
 
 class ProductResource implements ProductResourceInterface
 {
+    use RetriesStripeRequests;
+
     /**
-     * @throws ApiErrorException
+     * @throws ProviderException|Throwable
      */
     public function create(string $name, ?string $description = null): string
     {
-        $product = Product::create([
-            'name' => $name,
-            'description' => $description,
-        ]);
+        return $this->retryable(function () use ($name, $description) {
+            $product = Product::create([
+                'name' => $name,
+                'description' => $description,
+            ]);
 
-        return $product->id;
+            return $product->id;
+        });
     }
 
     /**
-     * @throws ApiErrorException
+     * @throws ProviderException|Throwable
      */
     public function retrieve(string $productId): object
     {
-        return Product::retrieve($productId);
+        return $this->retryable(fn () => Product::retrieve($productId));
     }
 
     /**
-     * @throws ApiErrorException
+     * @throws ProviderException|Throwable
      */
     public function update(string $productId, array $params): object
     {
-        return Product::update($productId, $params);
+        return $this->retryable(fn () => Product::update($productId, $params));
     }
 
     /**
-     * @throws ApiErrorException
+     * @throws ProviderException|Throwable
      */
     public function archive(string $productId): object
     {
-        return Product::update($productId, ['active' => false]);
+        return $this->retryable(fn () => Product::update($productId, ['active' => false]));
     }
 }

@@ -3,7 +3,7 @@
 namespace ValentinMorice\LaravelBillingRepository\Stripe\Actions\Product;
 
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
-use ValentinMorice\LaravelBillingRepository\Data\ProductDefinition;
+use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\ProductDefinition;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 
 class UpdateAction

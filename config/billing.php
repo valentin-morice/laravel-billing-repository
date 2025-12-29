@@ -1,7 +1,7 @@
 <?php
 
-use ValentinMorice\LaravelBillingRepository\Data\PriceDefinition;
-use ValentinMorice\LaravelBillingRepository\Data\ProductDefinition;
+use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\PriceDefinition;
+use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\ProductDefinition;
 
 // config for ValentinMorice/LaravelBillingRepository
 return [

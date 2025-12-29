@@ -5,24 +5,34 @@ namespace ValentinMorice\LaravelBillingRepository\Stripe\Services;
 use Illuminate\Database\Eloquent\Collection;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\Services\PriceServiceInterface;
-use ValentinMorice\LaravelBillingRepository\Data\PriceDefinition;
+use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\PriceDefinition;
+use ValentinMorice\LaravelBillingRepository\Data\DTO\Service\PriceArchiveResult;
+use ValentinMorice\LaravelBillingRepository\Data\DTO\Service\PriceSyncResult;
+use ValentinMorice\LaravelBillingRepository\Deployer\Actions\DetectChangesAction;
 use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Price\ArchiveAction;
 use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Price\CreateAction;
+use ValentinMorice\LaravelBillingRepository\Stripe\Services\Abstract\AbstractResourceService;
 
-class PriceService implements PriceServiceInterface
+/**
+ * @extends AbstractResourceService<BillingPrice>
+ */
+class PriceService extends AbstractResourceService implements PriceServiceInterface
 {
     public function __construct(
         protected ProviderClientInterface $client,
+        protected DetectChangesAction $detectChanges,
         protected ?CreateAction $createAction = null,
         protected ?ArchiveAction $archiveAction = null,
     ) {
+        parent::__construct($client, $detectChanges);
+
         $this->createAction ??= new CreateAction($client);
         $this->archiveAction ??= new ArchiveAction($client);
     }
 
-    public function sync(BillingProduct $product, string $priceType, PriceDefinition $definition): array
+    public function sync(BillingProduct $product, string $priceType, PriceDefinition $definition): PriceSyncResult
     {
         $existingPrice = BillingPrice::where('product_id', $product->id)
             ->where('type', $priceType)
@@ -30,22 +40,24 @@ class PriceService implements PriceServiceInterface
             ->first();
 
         if ($existingPrice) {
-            if ($this->hasChanged($existingPrice, $definition)) {
+            $changes = $this->detectChanges->handle($existingPrice, $definition, ['amount', 'currency', 'recurring', 'nickname']);
+
+            if (! empty($changes)) {
                 $oldPrice = $this->archiveAction->handle($existingPrice);
                 $newPrice = $this->createAction->handle($product, $priceType, $definition);
 
-                return ['action' => 'updated', 'old' => $oldPrice, 'new' => $newPrice];
+                return PriceSyncResult::updated($newPrice, $oldPrice, $changes);
             }
 
-            return ['action' => 'unchanged', 'price' => $existingPrice];
+            return PriceSyncResult::unchanged($existingPrice);
         }
 
         $price = $this->createAction->handle($product, $priceType, $definition);
 
-        return ['action' => 'created', 'price' => $price];
+        return PriceSyncResult::created($price);
     }
 
-    public function archiveRemoved(BillingProduct $product, array $configuredPriceTypes): int
+    public function archiveRemoved(BillingProduct $product, array $configuredPriceTypes): PriceArchiveResult
     {
         /** @var Collection<int, BillingPrice> $removedPrices */
         $removedPrices = $product->prices()
@@ -53,21 +65,13 @@ class PriceService implements PriceServiceInterface
             ->whereNotIn('type', $configuredPriceTypes)
             ->get();
 
-        $archivedCount = 0;
+        $archivedPrices = $this->archiveRemovedResources($removedPrices);
 
-        foreach ($removedPrices as $price) {
-            $this->archiveAction->handle($price);
-            $archivedCount++;
-        }
-
-        return $archivedCount;
+        return PriceArchiveResult::fromArray($archivedPrices);
     }
 
-    protected function hasChanged(BillingPrice $price, PriceDefinition $definition): bool
+    protected function getArchiveAction(): ArchiveAction
     {
-        return $price->amount !== $definition->amount
-            || $price->currency !== $definition->currency
-            || $price->recurring !== $definition->recurring
-            || $price->nickname !== $definition->nickname;
+        return $this->archiveAction;
     }
 }

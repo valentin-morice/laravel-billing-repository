@@ -3,7 +3,7 @@
 use Mockery as m;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\Resources\PriceResourceInterface;
-use ValentinMorice\LaravelBillingRepository\Data\PriceDefinition;
+use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\PriceDefinition;
 use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Price\CreateAction;
@@ -216,4 +216,38 @@ it('throws exception when provider API fails', function () {
 
     // Verify no database record was created
     expect(BillingPrice::count())->toBe(0);
+});
+
+it('returns existing price when duplicate provider_id is detected', function () {
+    $product = BillingProduct::factory()->create([
+        'key' => 'test_product',
+        'provider_id' => 'prod_123',
+        'name' => 'Test Product',
+    ]);
+
+    // Create existing price in database
+    $existingPrice = BillingPrice::factory()->forProduct($product)->create([
+        'type' => 'monthly',
+        'provider_id' => 'price_duplicate',
+        'amount' => 1000,
+    ]);
+
+    $priceResource = m::mock(PriceResourceInterface::class);
+    $client = m::mock(ProviderClientInterface::class);
+    $client->shouldReceive('price')->andReturn($priceResource);
+
+    // Stripe returns same provider_id
+    $priceResource->shouldReceive('create')
+        ->once()
+        ->andReturn('price_duplicate');
+
+    $action = new CreateAction($client);
+    $definition = new PriceDefinition(amount: 2000);
+
+    $result = $action->handle($product, 'yearly', $definition);
+
+    // Should return the existing price instead of creating a new one
+    expect($result->id)->toBe($existingPrice->id)
+        ->and($result->provider_id)->toBe('price_duplicate')
+        ->and(BillingPrice::count())->toBe(1); // Still only 1 price
 });

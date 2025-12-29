@@ -3,16 +3,20 @@
 namespace ValentinMorice\LaravelBillingRepository\Commands;
 
 use Illuminate\Console\Command;
-use ValentinMorice\LaravelBillingRepository\Deployer;
+use ValentinMorice\LaravelBillingRepository\Data\Enum\ChangeTypeEnum;
+use ValentinMorice\LaravelBillingRepository\Deployer\DeployerService;
+use ValentinMorice\LaravelBillingRepository\Exceptions\Deployer\DeploymentFailedException;
+use ValentinMorice\LaravelBillingRepository\Formatter\FormatterService;
 
 class DeployCommand extends Command
 {
-    public $signature = 'billing:deploy';
+    public $signature = 'billing:deploy {--dry-run : Preview changes without executing}';
 
     public $description = 'Deploy billing products and prices from config to your provider';
 
     public function __construct(
-        protected Deployer $deployer
+        protected DeployerService $deployer,
+        protected FormatterService $formatter,
     ) {
         parent::__construct();
     }
@@ -26,31 +30,57 @@ class DeployCommand extends Command
             return self::FAILURE;
         }
 
-        $this->info('Deploying billing products...');
-
         try {
-            $results = $this->deployer->deploy();
+            $provider = ucfirst(config('billing.provider', 'stripe'));
+
+            $changeSet = $this->deployer->analyze();
+            $this->formatter->formatAnalysis($this, $changeSet);
+
+            if ($this->option('dry-run')) {
+                return self::SUCCESS;
+            }
 
             $this->newLine();
-            $this->line('<fg=green>Products:</>');
-            $this->info("  Created: {$results['products']['created']}");
-            $this->info("  Updated: {$results['products']['updated']}");
-            $this->info("  Unchanged: {$results['products']['unchanged']}");
-            $this->info("  Archived: {$results['products']['archived']}");
+            $this->info("Deploying to {$provider}...");
 
-            $this->newLine();
-            $this->line('<fg=green>Prices:</>');
-            $this->info("  Created: {$results['prices']['created']}");
-            $this->info("  Updated: {$results['prices']['updated']}");
-            $this->info("  Unchanged: {$results['prices']['unchanged']}");
-            $this->info("  Archived: {$results['prices']['archived']}");
+            $executedChangeSet = $this->deployer->deploy();
+
+            foreach ($executedChangeSet->productChanges as $change) {
+                if ($change->type !== ChangeTypeEnum::Unchanged) {
+                    $this->formatter->formatDeploymentProgress($this, $change);
+                }
+            }
+
+            foreach ($executedChangeSet->priceChanges as $change) {
+                if ($change->type !== ChangeTypeEnum::Unchanged) {
+                    $this->formatter->formatDeploymentProgress($this, $change);
+                }
+            }
 
             $this->newLine();
             $this->info('Deployment complete!');
 
             return self::SUCCESS;
+        } catch (DeploymentFailedException $e) {
+            $this->newLine();
+            $this->error('⚠ DEPLOYMENT FAILED - OUT OF SYNC');
+            $this->newLine();
+            $this->warn($e->getMessage());
+            $this->newLine();
+
+            if ($this->output->isVerbose() && $e->getPrevious()) {
+                $this->line('<fg=gray>Original error:</>');
+                $this->line('<fg=gray>'.$e->getPrevious()->getMessage().'</>');
+                $this->newLine();
+            }
+
+            return self::FAILURE;
         } catch (\Exception $e) {
             $this->error('Deployment failed: '.$e->getMessage());
+
+            if ($this->output->isVerbose()) {
+                $this->line($e->getTraceAsString());
+            }
 
             return self::FAILURE;
         }

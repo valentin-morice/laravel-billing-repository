@@ -2,6 +2,7 @@
 
 namespace ValentinMorice\LaravelBillingRepository\Stripe;
 
+use Stripe\Stripe;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderAdapterInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
 
@@ -11,7 +12,11 @@ class StripeAdapter implements ProviderAdapterInterface
 
     public function __construct()
     {
-        // Client will be resolved from the container or created lazily
+        $apiKey = config('billing.api_key');
+
+        if ($apiKey) {
+            Stripe::setApiKey($apiKey);
+        }
     }
 
     /**

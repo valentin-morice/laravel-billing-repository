@@ -2,20 +2,21 @@
 
 namespace ValentinMorice\LaravelBillingRepository\Stripe\Actions\Product;
 
-use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
+use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Abstract\AbstractArchiveAction;
 
-class ArchiveAction
+class ArchiveAction extends AbstractArchiveAction
 {
-    public function __construct(
-        protected ProviderClientInterface $client
-    ) {}
-
     public function handle(BillingProduct $product): BillingProduct
     {
-        $this->client->product()->archive($product->provider_id);
-        $product->update(['active' => false]);
+        $this->archiveInProvider($product->provider_id);
+        $this->markAsInactive($product);
 
         return $product->fresh();
+    }
+
+    protected function archiveInProvider(string $providerId): void
+    {
+        $this->client->product()->archive($providerId);
     }
 }

@@ -2,7 +2,9 @@
 
 namespace ValentinMorice\LaravelBillingRepository\Contracts\Services;
 
-use ValentinMorice\LaravelBillingRepository\Data\ProductDefinition;
+use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\ProductDefinition;
+use ValentinMorice\LaravelBillingRepository\Data\DTO\Service\ProductArchiveResult;
+use ValentinMorice\LaravelBillingRepository\Data\DTO\Service\ProductSyncResult;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 
 /**
@@ -12,15 +14,13 @@ interface ProductServiceInterface
 {
     /**
      * Sync a product with the billing provider
-     *
-     * @return array{action: string, product: BillingProduct}
      */
-    public function sync(string $productKey, ProductDefinition $definition): array;
+    public function sync(string $productKey, ProductDefinition $definition): ProductSyncResult;
 
     /**
      * Archive products that were removed from configuration
      *
      * @param  array<int, string>  $configuredProductKeys
      */
-    public function archiveRemoved(array $configuredProductKeys): int;
+    public function archiveRemoved(array $configuredProductKeys): ProductArchiveResult;
 }

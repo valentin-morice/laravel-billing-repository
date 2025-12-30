@@ -5,6 +5,7 @@ namespace ValentinMorice\LaravelBillingRepository\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -16,11 +17,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property array|null $recurring
  * @property string|null $nickname
  * @property bool $active
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 class BillingPrice extends Model
 {
+    // BEGIN AUTO-GENERATED CONSTANTS - DO NOT EDIT MANUALLY
+    // END AUTO-GENERATED CONSTANTS
+
     use HasFactory;
 
     protected $fillable = [
@@ -45,5 +49,10 @@ class BillingPrice extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(BillingProduct::class, 'product_id');
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('active', true);
     }
 }

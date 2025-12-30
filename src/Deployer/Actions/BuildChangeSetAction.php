@@ -5,6 +5,7 @@ namespace ValentinMorice\LaravelBillingRepository\Deployer\Actions;
 use Illuminate\Pipeline\Pipeline;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\ChangeSet;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\DeployContext;
+use ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\PostDeploy\GenerateConstantsStage;
 use ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\Price\DetectPriceChangesStage;
 use ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\Price\ProcessPriceChangesStage;
 use ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\Product\DetectProductChangesStage;
@@ -35,6 +36,7 @@ class BuildChangeSetAction
                 ProcessPriceChangesStage::class,
                 DetectArchivedResourcesStage::class,
                 ProcessArchivedResourcesStage::class,
+                GenerateConstantsStage::class,
             ])
             ->thenReturn();
 

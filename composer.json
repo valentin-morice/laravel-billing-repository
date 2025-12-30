@@ -70,7 +70,7 @@
                 "ValentinMorice\\LaravelBillingRepository\\LaravelBillingRepositoryServiceProvider"
             ],
             "aliases": {
-                "LaravelBillingRepository": "ValentinMorice\\LaravelBillingRepository\\Facades\\LaravelBillingRepository"
+                "BillingRepository": "ValentinMorice\\LaravelBillingRepository\\Facades\\BillingRepository"
             }
         }
     },

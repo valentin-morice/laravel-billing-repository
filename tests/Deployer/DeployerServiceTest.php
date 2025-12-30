@@ -1,6 +1,7 @@
 <?php
 
 use Mockery as m;
+use ValentinMorice\LaravelBillingRepository\ConstantGenerator\ConstantGeneratorService;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\Resources\PriceResourceInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\Resources\ProductResourceInterface;
@@ -18,6 +19,12 @@ use ValentinMorice\LaravelBillingRepository\Stripe\Services\ProductService;
 
 beforeEach(function () {
     $this->artisan('migrate', ['--database' => 'testing']);
+
+    // Mock constant generator to prevent writing to real model files during tests
+    app()->instance(
+        ConstantGeneratorService::class,
+        m::mock(ConstantGeneratorService::class)->shouldReceive('generate')->andReturn(true)->getMock()
+    );
 });
 
 afterEach(function () {

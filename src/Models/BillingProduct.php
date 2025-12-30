@@ -19,6 +19,9 @@ use Illuminate\Support\Carbon;
  */
 class BillingProduct extends Model
 {
+    // BEGIN AUTO-GENERATED CONSTANTS - DO NOT EDIT MANUALLY
+    // END AUTO-GENERATED CONSTANTS
+
     use HasFactory;
 
     protected $fillable = [
@@ -39,5 +42,10 @@ class BillingProduct extends Model
     public function prices(): HasMany
     {
         return $this->hasMany(BillingPrice::class, 'product_id');
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('active', true);
     }
 }

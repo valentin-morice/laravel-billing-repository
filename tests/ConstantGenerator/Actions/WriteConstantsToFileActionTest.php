@@ -1,6 +1,8 @@
 <?php
 
 use ValentinMorice\LaravelBillingRepository\ConstantGenerator\Actions\WriteConstantsToFileAction;
+use ValentinMorice\LaravelBillingRepository\Exceptions\IO\FileParsingException;
+use ValentinMorice\LaravelBillingRepository\Exceptions\Models\InvalidModelException;
 
 beforeEach(function () {
     $this->tempDir = sys_get_temp_dir().'/billing-test-'.uniqid();
@@ -14,7 +16,7 @@ afterEach(function () {
     }
 });
 
-it('generates constants with markers in fresh model file', function () {
+it('generates constants in fresh model file', function () {
     $filePath = "{$this->tempDir}/TestModel.php";
     $fileContent = <<<'PHP'
 <?php
@@ -38,14 +40,12 @@ PHP;
 
     $updatedContent = file_get_contents($filePath);
     expect($updatedContent)
-        ->toContain('// BEGIN AUTO-GENERATED CONSTANTS - DO NOT EDIT MANUALLY')
         ->toContain("public const NIF = 'nif';")
         ->toContain("public const PREMIUM = 'premium';")
-        ->toContain('// END AUTO-GENERATED CONSTANTS')
         ->toContain('protected $fillable = [\'name\'];'); // Existing code preserved
 });
 
-it('replaces existing constants between markers', function () {
+it('replaces existing constants', function () {
     $filePath = "{$this->tempDir}/TestModel.php";
     $fileContent = <<<'PHP'
 <?php
@@ -144,9 +144,10 @@ PHP;
     expect($result)->toBeTrue();
 
     $updatedContent = file_get_contents($filePath);
+    // Even with empty constants, file should be valid and preserve existing code
     expect($updatedContent)
-        ->toContain('// BEGIN AUTO-GENERATED CONSTANTS - DO NOT EDIT MANUALLY')
-        ->toContain('// END AUTO-GENERATED CONSTANTS');
+        ->toContain('class TestModel')
+        ->toContain('protected $fillable');
 });
 
 it('preserves file permissions', function () {
@@ -180,7 +181,7 @@ it('throws exception when file does not exist', function () {
 
     $action = new WriteConstantsToFileAction;
     $action->handle($filePath, ['test' => 'TEST']);
-})->throws(\RuntimeException::class, 'Model file not found');
+})->throws(InvalidModelException::class, 'Model file not found');
 
 it('uses atomic write with temp file', function () {
     $filePath = "{$this->tempDir}/TestModel.php";
@@ -208,3 +209,171 @@ PHP;
     expect(file_exists($filePath))->toBeTrue();
     expect(file_get_contents($filePath))->toContain("public const TEST = 'test';");
 });
+
+// Edge case tests for AST-based implementation
+it('handles classes with attributes', function () {
+    $filePath = "{$this->tempDir}/TestModel.php";
+    $fileContent = <<<'PHP'
+<?php
+
+namespace Test;
+
+use Illuminate\Database\Eloquent\Model;
+
+#[SomeAttribute]
+#[AnotherAttribute('value')]
+class TestModel extends Model
+{
+    protected $fillable = ['name'];
+}
+PHP;
+
+    file_put_contents($filePath, $fileContent);
+
+    $action = new WriteConstantsToFileAction;
+    $result = $action->handle($filePath, ['test' => 'TEST']);
+
+    expect($result)->toBeTrue();
+
+    $updatedContent = file_get_contents($filePath);
+    expect($updatedContent)
+        ->toContain('#[SomeAttribute]')
+        ->toContain("#[AnotherAttribute('value')]")
+        ->toContain("public const TEST = 'test';");
+});
+
+it('handles readonly classes', function () {
+    $filePath = "{$this->tempDir}/TestModel.php";
+    $fileContent = <<<'PHP'
+<?php
+
+namespace Test;
+
+readonly class TestDTO
+{
+    public function __construct(
+        public string $name,
+    ) {}
+}
+PHP;
+
+    file_put_contents($filePath, $fileContent);
+
+    $action = new WriteConstantsToFileAction;
+    $result = $action->handle($filePath, ['test' => 'TEST']);
+
+    expect($result)->toBeTrue();
+
+    $updatedContent = file_get_contents($filePath);
+    expect($updatedContent)
+        ->toContain('readonly class TestDTO')
+        ->toContain("public const TEST = 'test';");
+});
+
+it('handles classes with multiple interfaces', function () {
+    $filePath = "{$this->tempDir}/TestModel.php";
+    $fileContent = <<<'PHP'
+<?php
+
+namespace Test;
+
+class TestModel implements InterfaceA, InterfaceB, InterfaceC
+{
+    protected $fillable = ['name'];
+}
+PHP;
+
+    file_put_contents($filePath, $fileContent);
+
+    $action = new WriteConstantsToFileAction;
+    $result = $action->handle($filePath, ['test' => 'TEST']);
+
+    expect($result)->toBeTrue();
+
+    $updatedContent = file_get_contents($filePath);
+    expect($updatedContent)
+        ->toContain('implements InterfaceA, InterfaceB, InterfaceC')
+        ->toContain("public const TEST = 'test';");
+});
+
+it('handles multiline class declarations', function () {
+    $filePath = "{$this->tempDir}/TestModel.php";
+    $fileContent = <<<'PHP'
+<?php
+
+namespace Test;
+
+class TestModel
+    extends BaseModel
+    implements InterfaceA,
+        InterfaceB
+{
+    protected $fillable = ['name'];
+}
+PHP;
+
+    file_put_contents($filePath, $fileContent);
+
+    $action = new WriteConstantsToFileAction;
+    $result = $action->handle($filePath, ['test' => 'TEST']);
+
+    expect($result)->toBeTrue();
+
+    $updatedContent = file_get_contents($filePath);
+    expect($updatedContent)
+        ->toContain('extends BaseModel')
+        ->toContain('implements InterfaceA')
+        ->toContain("public const TEST = 'test';");
+});
+
+it('throws exception for anonymous classes', function () {
+    $filePath = "{$this->tempDir}/TestModel.php";
+    $fileContent = <<<'PHP'
+<?php
+
+return new class {
+    protected $fillable = ['name'];
+};
+PHP;
+
+    file_put_contents($filePath, $fileContent);
+
+    $action = new WriteConstantsToFileAction;
+    $action->handle($filePath, ['test' => 'TEST']);
+})->throws(InvalidModelException::class, 'Anonymous classes are not supported');
+
+it('throws exception when no class found in file', function () {
+    $filePath = "{$this->tempDir}/TestModel.php";
+    $fileContent = <<<'PHP'
+<?php
+
+namespace Test;
+
+interface TestInterface
+{
+    public function test(): void;
+}
+PHP;
+
+    file_put_contents($filePath, $fileContent);
+
+    $action = new WriteConstantsToFileAction;
+    $action->handle($filePath, ['test' => 'TEST']);
+})->throws(InvalidModelException::class, 'No class found');
+
+it('throws exception for syntax errors in source file', function () {
+    $filePath = "{$this->tempDir}/TestModel.php";
+    $fileContent = <<<'PHP'
+<?php
+
+namespace Test;
+
+class TestModel {
+    // Missing closing brace
+PHP;
+
+    file_put_contents($filePath, $fileContent);
+
+    $action = new WriteConstantsToFileAction;
+    $action->handle($filePath, ['test' => 'TEST']);
+})->throws(FileParsingException::class, 'Parse error');

@@ -3,6 +3,8 @@
 namespace ValentinMorice\LaravelBillingRepository\Stripe\Services;
 
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\Services\ProductServiceInterface;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\ProductDefinition;
@@ -34,25 +36,32 @@ class ProductService extends AbstractResourceService implements ProductServiceIn
         $this->archiveAction ??= new ArchiveAction($client);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function sync(string $productKey, ProductDefinition $definition): ProductSyncResult
     {
-        $existingProduct = BillingProduct::where('key', $productKey)->first();
+        return DB::transaction(function () use ($productKey, $definition) {
+            $existingProduct = BillingProduct::where('key', $productKey)
+                ->lockForUpdate()
+                ->first();
 
-        if ($existingProduct) {
-            $changes = $this->detectChanges->handle($existingProduct, $definition, ['name', 'description']);
+            if ($existingProduct) {
+                $changes = $this->detectChanges->handle($existingProduct, $definition, ['name', 'description']);
 
-            if (! empty($changes)) {
-                $product = $this->updateAction->handle($existingProduct, $definition);
+                if (! empty($changes)) {
+                    $product = $this->updateAction->handle($existingProduct, $definition);
 
-                return ProductSyncResult::updated($product, $changes);
+                    return ProductSyncResult::updated($product, $changes);
+                }
+
+                return ProductSyncResult::unchanged($existingProduct);
             }
 
-            return ProductSyncResult::unchanged($existingProduct);
-        }
+            $product = $this->createAction->handle($productKey, $definition);
 
-        $product = $this->createAction->handle($productKey, $definition);
-
-        return ProductSyncResult::created($product);
+            return ProductSyncResult::created($product);
+        });
     }
 
     public function archiveRemoved(array $configuredProductKeys): ProductArchiveResult

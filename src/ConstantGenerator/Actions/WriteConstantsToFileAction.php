@@ -2,11 +2,34 @@
 
 namespace ValentinMorice\LaravelBillingRepository\ConstantGenerator\Actions;
 
+use PhpParser\BuilderFactory;
+use PhpParser\Error;
+use PhpParser\Modifiers;
+use PhpParser\Node\Const_;
+use PhpParser\Node\Scalar\String_;
+use PhpParser\Node\Stmt;
+use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Stmt\ClassConst;
+use PhpParser\NodeFinder;
+use PhpParser\Parser;
+use PhpParser\ParserFactory;
+use PhpParser\PrettyPrinter\Standard;
+use ValentinMorice\LaravelBillingRepository\Exceptions\IO\FileParsingException;
+use ValentinMorice\LaravelBillingRepository\Exceptions\Models\InvalidModelException;
+
 class WriteConstantsToFileAction
 {
-    private const MARKER_BEGIN = '// BEGIN AUTO-GENERATED CONSTANTS - DO NOT EDIT MANUALLY';
-
-    private const MARKER_END = '// END AUTO-GENERATED CONSTANTS';
+    public function __construct(
+        protected ?Parser $parser = null,
+        protected ?BuilderFactory $builderFactory = null,
+        protected ?NodeFinder $nodeFinder = null,
+        protected ?Standard $printer = null,
+    ) {
+        $this->parser = $parser ?? (new ParserFactory)->createForNewestSupportedVersion();
+        $this->builderFactory = $builderFactory ?? new BuilderFactory;
+        $this->nodeFinder = $nodeFinder ?? new NodeFinder;
+        $this->printer = $printer ?? new Standard;
+    }
 
     /**
      * @param  array<string, string>  $constants  ['key' => 'CONSTANT_NAME']
@@ -14,64 +37,121 @@ class WriteConstantsToFileAction
     public function handle(string $filePath, array $constants): bool
     {
         if (! file_exists($filePath)) {
-            throw new \RuntimeException("Model file not found: {$filePath}");
+            throw InvalidModelException::fileNotFound($filePath);
         }
 
-        $content = file_get_contents($filePath);
-        if ($content === false) {
-            throw new \RuntimeException("Unable to read file: {$filePath}");
+        $ast = $this->parseFile($filePath);
+        $classNode = $this->findClassNode($ast);
+        $constantNodes = $this->buildConstantsNodes($constants);
+
+        $this->replaceAllPublicConstants($classNode, $constantNodes);
+
+        $result = $this->writeAtomic(
+            filePath: $filePath,
+            content: $this->printer->prettyPrintFile($ast)
+        );
+
+        if ($result && file_exists(base_path('vendor/bin/pint'))) {
+            exec('vendor/bin/pint '.escapeshellarg($filePath).' 2>&1');
         }
 
-        $constantsSection = $this->buildConstantsSection($constants);
-
-        // Check if markers exist
-        if (str_contains($content, self::MARKER_BEGIN)) {
-            // Replace existing section including leading whitespace to avoid stacking indentation
-            $pattern = '/^[ \t]*'.preg_quote(self::MARKER_BEGIN, '/').
-                '.*?'.
-                '^[ \t]*'.preg_quote(self::MARKER_END, '/').'/ms';
-            $content = preg_replace($pattern, $constantsSection, $content);
-        } else {
-            // Insert new section after class declaration
-            $content = $this->insertConstantsSection($content, $constantsSection);
-        }
-
-        // Atomic write: temp file + rename
-        return $this->writeAtomic($filePath, $content);
+        return $result;
     }
 
     /**
-     * @param  array<string, string>  $constants
+     * Parse PHP file to AST
+     *
+     * @return array<Stmt>
      */
-    private function buildConstantsSection(array $constants): string
+    private function parseFile(string $filePath): array
     {
-        $lines = ['    '.self::MARKER_BEGIN];
+        try {
+            $content = file_get_contents($filePath);
+            if ($content === false) {
+                throw FileParsingException::unableToRead($filePath);
+            }
 
-        foreach ($constants as $key => $constantName) {
-            $lines[] = sprintf("    public const %s = '%s';", $constantName, $key);
+            $ast = $this->parser->parse($content);
+            if ($ast === null) {
+                throw FileParsingException::failedToParse($filePath);
+            }
+
+            return $ast;
+        } catch (Error $e) {
+            throw FileParsingException::parseError($filePath, $e);
+        }
+    }
+
+    /**
+     * Find the class node in AST
+     */
+    private function findClassNode(array $ast): Class_
+    {
+        $classes = $this->nodeFinder->findInstanceOf($ast, Class_::class);
+
+        if (empty($classes)) {
+            throw InvalidModelException::noClassFound();
         }
 
-        $lines[] = '    '.self::MARKER_END;
+        /** @var Class_ $class */
+        $class = $classes[0];
 
-        return implode("\n", $lines);
+        if ($class->name === null) {
+            throw InvalidModelException::anonymousClass();
+        }
+
+        return $class;
     }
 
-    private function insertConstantsSection(string $content, string $section): string
+    /**
+     * Build constant nodes
+     *
+     * @param  array<string, string>  $constants
+     * @return array<ClassConst>
+     */
+    private function buildConstantsNodes(array $constants): array
     {
-        // Find class declaration and insert after opening brace
-        $pattern = '/(class\s+\w+.*?\{)/s';
-        $replacement = "$1\n{$section}\n";
+        $nodes = [];
 
-        return preg_replace($pattern, $replacement, $content, 1);
+        foreach ($constants as $key => $constantName) {
+            $nodes[] = new ClassConst(
+                [
+                    new Const_(
+                        $constantName,
+                        new String_($key)
+                    ),
+                ],
+                Modifiers::PUBLIC
+            );
+        }
+
+        return $nodes;
     }
 
+    /**
+     * Replace all public constants in the class
+     */
+    private function replaceAllPublicConstants(Class_ $classNode, array $constantNodes): void
+    {
+        // Remove all existing public constants
+        $classNode->stmts = array_values(array_filter(
+            $classNode->stmts,
+            fn ($stmt) => ! ($stmt instanceof ClassConst && ($stmt->flags & Modifiers::PUBLIC))
+        ));
+
+        // Insert new constants at the beginning
+        $classNode->stmts = array_merge($constantNodes, $classNode->stmts);
+    }
+
+    /**
+     * Write file atomically with permission preservation
+     */
     private function writeAtomic(string $filePath, string $content): bool
     {
         $tempFile = $filePath.'.tmp';
 
         file_put_contents($tempFile, $content);
 
-        // Preserve original permissions
         $permissions = fileperms($filePath);
         if ($permissions !== false) {
             chmod($tempFile, $permissions);

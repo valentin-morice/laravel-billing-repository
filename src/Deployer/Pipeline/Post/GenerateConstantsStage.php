@@ -1,6 +1,6 @@
 <?php
 
-namespace ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\PostDeploy;
+namespace ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\Post;
 
 use ValentinMorice\LaravelBillingRepository\ConstantGenerator\ConstantGeneratorService;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\DeployContext;

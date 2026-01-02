@@ -3,6 +3,7 @@
 namespace ValentinMorice\LaravelBillingRepository\Formatter\Actions;
 
 use Illuminate\Console\Command;
+use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\RecurringConfig;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\ChangeSet;
 use ValentinMorice\LaravelBillingRepository\Data\Enum\ChangeTypeEnum;
 
@@ -20,7 +21,6 @@ class FormatAnalysisAction
         $command->info('Analyzing configuration...');
         $command->newLine();
 
-        // Products section
         $command->line('<fg=green>Products:</>');
         foreach ($changeSet->productChanges as $change) {
             $symbol = $change->type->getSymbol();
@@ -32,7 +32,6 @@ class FormatAnalysisAction
 
             $command->line("  {$symbol} {$change->productKey} ({$name})");
 
-            // Show description for creates
             if ($change->type === ChangeTypeEnum::Created && $change->definition?->description) {
                 $command->line("    \"{$change->definition->description}\"");
             }
@@ -49,7 +48,6 @@ class FormatAnalysisAction
 
         $command->newLine();
 
-        // Prices section
         $command->line('<fg=green>Prices:</>');
         foreach ($changeSet->priceChanges as $change) {
             $symbol = $change->type->getSymbol();
@@ -78,19 +76,17 @@ class FormatAnalysisAction
                         };
                         $old = $this->formatCurrency($diff['old'], $currency);
                         $new = $this->formatCurrency($diff['new'], $currency);
-                        $command->line("    - {$field}: {$old} → {$new}");
                     } else {
                         $old = is_array($diff['old']) ? json_encode($diff['old']) : ($diff['old'] ?? 'null');
                         $new = is_array($diff['new']) ? json_encode($diff['new']) : ($diff['new'] ?? 'null');
-                        $command->line("    - {$field}: {$old} → {$new}");
                     }
+                    $command->line("    - {$field}: {$old} → {$new}");
                 }
             }
         }
 
         $command->newLine();
 
-        // Summary
         $this->formatSummary->handle($command, $changeSet);
     }
 
@@ -112,14 +108,19 @@ class FormatAnalysisAction
     /**
      * Format recurring interval information
      */
-    private function formatRecurring(?array $recurring): string
+    private function formatRecurring(RecurringConfig|array|null $recurring): string
     {
         if (! $recurring) {
             return '';
         }
 
-        $interval = $recurring['interval'] ?? 'unknown';
-        $count = $recurring['interval_count'] ?? 1;
+        if ($recurring instanceof RecurringConfig) {
+            $interval = $recurring->interval;
+            $count = $recurring->intervalCount;
+        } else {
+            $interval = $recurring['interval'] ?? 'unknown';
+            $count = $recurring['interval_count'] ?? 1;
+        }
 
         if ($count === 1) {
             return "/{$interval}";

@@ -3,6 +3,7 @@
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderAdapterInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\Services\PriceServiceInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\Services\ProductServiceInterface;
+use ValentinMorice\LaravelBillingRepository\Exceptions\IO\ConfigurationException;
 use ValentinMorice\LaravelBillingRepository\Stripe\StripeAdapter;
 
 it('throws exception when provider is not configured', function () {
@@ -11,7 +12,7 @@ it('throws exception when provider is not configured', function () {
     app()->forgetInstance(ProviderAdapterInterface::class);
 
     expect(fn () => app(ProviderAdapterInterface::class))
-        ->toThrow(RuntimeException::class, 'Billing provider not configured');
+        ->toThrow(ConfigurationException::class, 'Billing provider not configured');
 });
 
 it('uses stripe when explicitly configured', function () {
@@ -30,7 +31,7 @@ it('throws exception for unknown provider in adapter', function () {
     app()->forgetInstance(ProviderAdapterInterface::class);
 
     expect(fn () => app(ProviderAdapterInterface::class))
-        ->toThrow(InvalidArgumentException::class, "Unknown billing provider: 'unknown_provider'");
+        ->toThrow(ConfigurationException::class, "Unknown billing provider: 'unknown_provider'");
 });
 
 it('throws exception for unknown provider in product service', function () {
@@ -39,7 +40,7 @@ it('throws exception for unknown provider in product service', function () {
     app()->forgetInstance(ProductServiceInterface::class);
 
     expect(fn () => app(ProductServiceInterface::class))
-        ->toThrow(InvalidArgumentException::class, "Unknown billing provider: 'paddle'");
+        ->toThrow(ConfigurationException::class, "Unknown billing provider: 'paddle'");
 });
 
 it('throws exception for unknown provider in price service', function () {
@@ -48,7 +49,7 @@ it('throws exception for unknown provider in price service', function () {
     app()->forgetInstance(PriceServiceInterface::class);
 
     expect(fn () => app(PriceServiceInterface::class))
-        ->toThrow(InvalidArgumentException::class, "Unknown billing provider: 'paypal'");
+        ->toThrow(ConfigurationException::class, "Unknown billing provider: 'paypal'");
 });
 
 it('can switch providers between tests', function () {
@@ -64,5 +65,5 @@ it('can switch providers between tests', function () {
     app()->forgetInstance(ProviderAdapterInterface::class);
 
     expect(fn () => app(ProviderAdapterInterface::class))
-        ->toThrow(InvalidArgumentException::class);
+        ->toThrow(ConfigurationException::class);
 });

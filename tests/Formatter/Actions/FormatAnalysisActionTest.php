@@ -4,6 +4,7 @@ use Illuminate\Console\Command;
 use Mockery as m;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\PriceDefinition;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\ProductDefinition;
+use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\RecurringConfig;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\ChangeSet;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\PriceChange;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\ProductChange;
@@ -166,7 +167,7 @@ it('formats created price with currency and recurring', function () {
     $definition = new PriceDefinition(
         amount: 2999,
         currency: 'usd',
-        recurring: ['interval' => 'month', 'interval_count' => 1],
+        recurring: new RecurringConfig('month', 1),
     );
 
     $priceChange = new PriceChange(
@@ -208,7 +209,7 @@ it('formats updated price with amount diff', function () {
     $definition = new PriceDefinition(
         amount: 1999,
         currency: 'usd',
-        recurring: ['interval' => 'month'],
+        recurring: new RecurringConfig('month'),
     );
 
     $priceChange = new PriceChange(
@@ -251,7 +252,7 @@ it('formats price with yearly recurring', function () {
     $definition = new PriceDefinition(
         amount: 29999,
         currency: 'usd',
-        recurring: ['interval' => 'year', 'interval_count' => 1],
+        recurring: new RecurringConfig('year', 1),
     );
 
     $priceChange = new PriceChange(
@@ -287,7 +288,7 @@ it('formats price with multi-interval recurring', function () {
     $definition = new PriceDefinition(
         amount: 9999,
         currency: 'usd',
-        recurring: ['interval' => 'month', 'interval_count' => 3],
+        recurring: new RecurringConfig('month', 3),
     );
 
     $priceChange = new PriceChange(
@@ -323,7 +324,7 @@ it('formats price with euro currency', function () {
     $definition = new PriceDefinition(
         amount: 1999,
         currency: 'eur',
-        recurring: ['interval' => 'month'],
+        recurring: new RecurringConfig('month'),
     );
 
     $priceChange = new PriceChange(

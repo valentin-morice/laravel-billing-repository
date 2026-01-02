@@ -143,7 +143,7 @@ it('returns distinct price types', function () {
     // Create multiple prices with the same type
     BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'default',
+        'type' => 'monthly',
         'provider_id' => 'price_123',
         'amount' => 1000,
         'currency' => 'eur',
@@ -152,7 +152,7 @@ it('returns distinct price types', function () {
 
     BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'default',
+        'type' => 'yearly',
         'provider_id' => 'price_456',
         'amount' => 2000,
         'currency' => 'usd',
@@ -163,7 +163,8 @@ it('returns distinct price types', function () {
     $result = $action->handle(ModelType::Price);
 
     expect($result)->toBe([
-        'default' => 'DEFAULT_CONST',
+        'monthly' => 'MONTHLY',
+        'yearly' => 'YEARLY',
     ]);
 });
 

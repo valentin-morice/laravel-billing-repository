@@ -1,5 +1,6 @@
 <?php
 
+use ValentinMorice\LaravelBillingRepository\Exceptions\Models\ProductNotFoundException;
 use ValentinMorice\LaravelBillingRepository\Facades\BillingRepository;
 use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
@@ -104,5 +105,5 @@ it('facade throws exception for missing product', function () {
     ]);
 
     expect(fn () => BillingRepository::productId('nonexistent'))
-        ->toThrow(\InvalidArgumentException::class, "Product 'nonexistent' not found");
+        ->toThrow(ProductNotFoundException::class, "Product 'nonexistent' not found");
 });

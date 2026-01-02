@@ -3,6 +3,8 @@
 namespace ValentinMorice\LaravelBillingRepository\Stripe\Services;
 
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\Services\PriceServiceInterface;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\PriceDefinition;
@@ -32,29 +34,35 @@ class PriceService extends AbstractResourceService implements PriceServiceInterf
         $this->archiveAction ??= new ArchiveAction($client);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function sync(BillingProduct $product, string $priceType, PriceDefinition $definition): PriceSyncResult
     {
-        $existingPrice = BillingPrice::where('product_id', $product->id)
-            ->where('type', $priceType)
-            ->where('active', true)
-            ->first();
+        return DB::transaction(function () use ($product, $priceType, $definition) {
+            $existingPrice = BillingPrice::where('product_id', $product->id)
+                ->where('type', $priceType)
+                ->where('active', true)
+                ->lockForUpdate()
+                ->first();
 
-        if ($existingPrice) {
-            $changes = $this->detectChanges->handle($existingPrice, $definition, ['amount', 'currency', 'recurring', 'nickname']);
+            if ($existingPrice) {
+                $changes = $this->detectChanges->handle($existingPrice, $definition, ['amount', 'currency', 'recurring', 'nickname']);
 
-            if (! empty($changes)) {
-                $oldPrice = $this->archiveAction->handle($existingPrice);
-                $newPrice = $this->createAction->handle($product, $priceType, $definition);
+                if (! empty($changes)) {
+                    $oldPrice = $this->archiveAction->handle($existingPrice);
+                    $newPrice = $this->createAction->handle($product, $priceType, $definition);
 
-                return PriceSyncResult::updated($newPrice, $oldPrice, $changes);
+                    return PriceSyncResult::updated($newPrice, $oldPrice, $changes);
+                }
+
+                return PriceSyncResult::unchanged($existingPrice);
             }
 
-            return PriceSyncResult::unchanged($existingPrice);
-        }
+            $price = $this->createAction->handle($product, $priceType, $definition);
 
-        $price = $this->createAction->handle($product, $priceType, $definition);
-
-        return PriceSyncResult::created($price);
+            return PriceSyncResult::created($price);
+        });
     }
 
     public function archiveRemoved(BillingProduct $product, array $configuredPriceTypes): PriceArchiveResult

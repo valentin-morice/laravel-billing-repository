@@ -5,7 +5,7 @@ namespace ValentinMorice\LaravelBillingRepository\Deployer\Actions;
 use Illuminate\Pipeline\Pipeline;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\ChangeSet;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\DeployContext;
-use ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\PostDeploy\GenerateConstantsStage;
+use ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\Post\GenerateConstantsStage;
 use ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\Price\DetectPriceChangesStage;
 use ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\Price\ProcessPriceChangesStage;
 use ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\Product\DetectProductChangesStage;

@@ -15,11 +15,19 @@ class DetectProductChangesStage extends AbstractDetectStage
      */
     protected function detect(DeployContext $context): void
     {
+        $productKeys = array_keys($context->definitions);
+        $existingProducts = BillingProduct::whereIn('key', $productKeys)
+            ->with(['prices' => function ($query) {
+                $query->where('active', true);
+            }])
+            ->get()
+            ->keyBy('key');
+
         foreach ($context->definitions as $productKey => $definition) {
-            $existingProduct = BillingProduct::where('key', $productKey)->first();
+            /** @var BillingProduct|null $existingProduct */
+            $existingProduct = $existingProducts->get($productKey);
 
             if ($existingProduct) {
-                // Detect changes between existing and new definition
                 $changes = $this->detectChanges->handle(
                     $existingProduct,
                     $definition,
@@ -37,7 +45,6 @@ class DetectProductChangesStage extends AbstractDetectStage
                     changes: $changes,
                 ));
             } else {
-                // Product doesn't exist, will be created
                 $context->addProductChange(new ProductChange(
                     productKey: $productKey,
                     type: ChangeTypeEnum::Created,

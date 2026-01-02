@@ -2,6 +2,8 @@
 
 namespace ValentinMorice\LaravelBillingRepository\Deployer\Actions;
 
+use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\RecurringConfig;
+
 class DetectChangesAction
 {
     /**
@@ -13,10 +15,22 @@ class DetectChangesAction
     public function handle(object $existing, object $definition, array $fields): array
     {
         return collect($fields)
-            ->filter(fn ($field) => $existing->{$field} !== $definition->{$field})
+            ->filter(fn ($field) => ! $this->valuesAreEqual($existing->{$field}, $definition->{$field}))
             ->mapWithKeys(fn ($field) => [
                 $field => ['old' => $existing->{$field}, 'new' => $definition->{$field}],
             ])
             ->all();
+    }
+
+    /**
+     * Compare two values, handling RecurringConfig objects
+     */
+    private function valuesAreEqual(mixed $oldValue, mixed $newValue): bool
+    {
+        if ($newValue instanceof RecurringConfig) {
+            $newValue = $newValue->toArray();
+        }
+
+        return $oldValue === $newValue;
     }
 }

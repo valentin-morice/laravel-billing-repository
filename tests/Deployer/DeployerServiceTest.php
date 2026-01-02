@@ -7,8 +7,6 @@ use ValentinMorice\LaravelBillingRepository\Contracts\Resources\PriceResourceInt
 use ValentinMorice\LaravelBillingRepository\Contracts\Resources\ProductResourceInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\Services\PriceServiceInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\Services\ProductServiceInterface;
-use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\PriceDefinition;
-use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\ProductDefinition;
 use ValentinMorice\LaravelBillingRepository\Deployer\Actions\BuildChangeSetAction;
 use ValentinMorice\LaravelBillingRepository\Deployer\Actions\DetectChangesAction;
 use ValentinMorice\LaravelBillingRepository\Deployer\DeployerService;
@@ -60,12 +58,15 @@ it('orchestrates product and price creation end-to-end', function () {
         ->andReturn('price_456');
 
     config(['billing.products' => [
-        'test_product' => new ProductDefinition(
-            name: 'Test Product',
-            prices: [
-                'default' => new PriceDefinition(1000),
+        'test_product' => [
+            'name' => 'Test Product',
+            'prices' => [
+                'default' => [
+                    'amount' => 1000,
+                    'currency' => 'eur',
+                ],
             ],
-        ),
+        ],
     ]]);
 
     $changeSet = $deployer->deploy();
@@ -111,19 +112,28 @@ it('iterates through multiple products and prices correctly', function () {
         ->andReturn('price_1', 'price_2', 'price_3');
 
     config(['billing.products' => [
-        'product_1' => new ProductDefinition(
-            name: 'Product 1',
-            prices: [
-                'default' => new PriceDefinition(1000),
-                'premium' => new PriceDefinition(2000),
+        'product_1' => [
+            'name' => 'Product 1',
+            'prices' => [
+                'default' => [
+                    'amount' => 1000,
+                    'currency' => 'eur',
+                ],
+                'premium' => [
+                    'amount' => 2000,
+                    'currency' => 'eur',
+                ],
             ],
-        ),
-        'product_2' => new ProductDefinition(
-            name: 'Product 2',
-            prices: [
-                'default' => new PriceDefinition(3000),
+        ],
+        'product_2' => [
+            'name' => 'Product 2',
+            'prices' => [
+                'default' => [
+                    'amount' => 3000,
+                    'currency' => 'eur',
+                ],
             ],
-        ),
+        ],
     ]]);
 
     $changeSet = $deployer->deploy();
@@ -236,13 +246,17 @@ it('archives prices that are removed from config', function () {
         ->andReturn((object) ['id' => 'price_yearly', 'active' => false]);
 
     config(['billing.products' => [
-        'test_product' => new ProductDefinition(
-            name: 'Test Product',
-            prices: [
-                'monthly' => new PriceDefinition(1000, recurring: ['interval' => 'month']),
+        'test_product' => [
+            'name' => 'Test Product',
+            'prices' => [
+                'monthly' => [
+                    'amount' => 1000,
+                    'currency' => 'eur',
+                    'recurring' => ['interval' => 'month'],
+                ],
                 // yearly removed
             ],
-        ),
+        ],
     ]]);
 
     $changeSet = $deployer->deploy();
@@ -301,10 +315,10 @@ it('archives products that are removed from config', function () {
         ->andReturn((object) ['id' => 'prod_2', 'active' => false]);
 
     config(['billing.products' => [
-        'product_1' => new ProductDefinition(
-            name: 'Product 1',
-            prices: [],
-        ),
+        'product_1' => [
+            'name' => 'Product 1',
+            'prices' => [],
+        ],
         // product_2 removed
     ]]);
 

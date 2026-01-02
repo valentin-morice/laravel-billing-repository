@@ -17,8 +17,8 @@ return new class extends Migration
             $table->boolean('active')->default(true);
             $table->timestamps();
 
-            $table->index('key');
-            $table->index('provider_id');
+            $table->index('active');
+            $table->index(['key', 'active']);
         });
     }
 

@@ -1,10 +1,9 @@
 <?php
 
 use ValentinMorice\LaravelBillingRepository\ConstantGenerator\ConstantGeneratorService;
-use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\PriceDefinition;
-use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\ProductDefinition;
 use ValentinMorice\LaravelBillingRepository\Deployer\DeployerService;
-use ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\PostDeploy\GenerateConstantsStage;
+use ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\Post\GenerateConstantsStage;
+use ValentinMorice\LaravelBillingRepository\Exceptions\Models\ProductNotFoundException;
 use ValentinMorice\LaravelBillingRepository\Facades\BillingRepository;
 use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
@@ -56,12 +55,15 @@ it('can use BillingRepository facade with manually created data', function () {
 it('dry-run does not call constant generator', function () {
     // Set up config
     config(['billing.products' => [
-        'test' => new ProductDefinition(
-            name: 'Test',
-            prices: [
-                'default' => new PriceDefinition(1000),
+        'test' => [
+            'name' => 'Test',
+            'prices' => [
+                'default' => [
+                    'amount' => 1000,
+                    'currency' => 'eur',
+                ],
             ],
-        ),
+        ],
     ]]);
 
     // Spy on ConstantGeneratorService
@@ -101,5 +103,5 @@ it('billing repository facade works correctly with active scope', function () {
 
     // Verify inactive product throws exception
     expect(fn () => BillingRepository::productId('inactive_product'))
-        ->toThrow(\InvalidArgumentException::class);
+        ->toThrow(ProductNotFoundException::class);
 });

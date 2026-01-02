@@ -4,6 +4,7 @@ use Mockery as m;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\Resources\PriceResourceInterface;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\PriceDefinition;
+use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\RecurringConfig;
 use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Price\CreateAction;
@@ -70,7 +71,7 @@ it('creates recurring price with interval', function () {
     $action = new CreateAction($client);
     $definition = new PriceDefinition(
         amount: 999,
-        recurring: ['interval' => 'month']
+        recurring: new RecurringConfig('month')
     );
 
     $result = $action->handle($product, 'monthly', $definition);
@@ -152,7 +153,7 @@ it('creates price with all optional fields', function () {
     $definition = new PriceDefinition(
         amount: 1999,
         currency: 'usd',
-        recurring: ['interval' => 'year'],
+        recurring: new RecurringConfig('year'),
         nickname: 'Annual Plan'
     );
 

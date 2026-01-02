@@ -3,14 +3,20 @@
 namespace ValentinMorice\LaravelBillingRepository;
 
 use Illuminate\Contracts\Support\DeferrableProvider;
+use PhpParser\BuilderFactory;
+use PhpParser\NodeFinder;
+use PhpParser\Parser;
+use PhpParser\ParserFactory;
 use Spatie\LaravelPackageTools\Exceptions\InvalidPackage;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use ValentinMorice\LaravelBillingRepository\Commands\DeployCommand;
+use ValentinMorice\LaravelBillingRepository\Commands\ImportCommand;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderAdapterInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\Services\PriceServiceInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\Services\ProductServiceInterface;
+use ValentinMorice\LaravelBillingRepository\Exceptions\IO\ConfigurationException;
 use ValentinMorice\LaravelBillingRepository\Stripe\Services\PriceService as StripePriceService;
 use ValentinMorice\LaravelBillingRepository\Stripe\Services\ProductService as StripeProductService;
 use ValentinMorice\LaravelBillingRepository\Stripe\StripeAdapter;
@@ -24,12 +30,10 @@ class LaravelBillingRepositoryServiceProvider extends PackageServiceProvider imp
     {
         parent::register();
 
-        // Register provider adapter
         $this->registerProviderBinding(ProviderAdapterInterface::class, [
             'stripe' => fn () => new StripeAdapter,
         ]);
 
-        // Bind the client interface to resolve from the adapter
         $this->app->singleton(ProviderClientInterface::class, function ($app) {
             return $app->make(ProviderAdapterInterface::class)->client();
         });
@@ -41,6 +45,13 @@ class LaravelBillingRepositoryServiceProvider extends PackageServiceProvider imp
         $this->registerProviderBinding(PriceServiceInterface::class, [
             'stripe' => fn ($app) => $app->make(StripePriceService::class),
         ]);
+
+        $this->app->singleton(Parser::class, function () {
+            return (new ParserFactory)->createForNewestSupportedVersion();
+        });
+
+        $this->app->singleton(BuilderFactory::class);
+        $this->app->singleton(NodeFinder::class);
     }
 
     /**
@@ -55,17 +66,11 @@ class LaravelBillingRepositoryServiceProvider extends PackageServiceProvider imp
             $provider = config('billing.provider');
 
             if ($provider === null) {
-                throw new \RuntimeException(
-                    'Billing provider not configured. Please publish the config file using: '.
-                    'php artisan vendor:publish --tag=laravel-billing-repository-config'
-                );
+                throw ConfigurationException::providerNotConfigured();
             }
 
             if (! isset($implementations[$provider])) {
-                $available = implode(', ', array_keys($implementations));
-                throw new \InvalidArgumentException(
-                    "Unknown billing provider: '{$provider}'. Available providers: {$available}"
-                );
+                throw ConfigurationException::unknownProvider($provider, array_keys($implementations));
             }
 
             return $implementations[$provider]($app);
@@ -86,7 +91,10 @@ class LaravelBillingRepositoryServiceProvider extends PackageServiceProvider imp
                 'create_billing_products_table',
                 'create_billing_prices_table',
             ])
-            ->hasCommand(DeployCommand::class);
+            ->hasCommands([
+                DeployCommand::class,
+                ImportCommand::class,
+            ]);
     }
 
     /**

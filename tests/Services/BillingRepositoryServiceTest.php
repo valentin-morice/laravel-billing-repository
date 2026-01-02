@@ -1,5 +1,7 @@
 <?php
 
+use ValentinMorice\LaravelBillingRepository\Exceptions\Models\PriceNotFoundException;
+use ValentinMorice\LaravelBillingRepository\Exceptions\Models\ProductNotFoundException;
 use ValentinMorice\LaravelBillingRepository\Facades\BillingRepository;
 use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
@@ -113,7 +115,7 @@ it('throws exception for missing product', function () {
     ]);
 
     expect(fn () => BillingRepository::productId('nonexistent'))
-        ->toThrow(\InvalidArgumentException::class, "Product 'nonexistent' not found");
+        ->toThrow(ProductNotFoundException::class, "Product 'nonexistent' not found");
 });
 
 it('throws exception for missing price', function () {
@@ -134,7 +136,7 @@ it('throws exception for missing price', function () {
     ]);
 
     expect(fn () => BillingRepository::priceId('nif', 'nonexistent'))
-        ->toThrow(\InvalidArgumentException::class, "Price 'nonexistent' not found for product 'nif'");
+        ->toThrow(PriceNotFoundException::class, "Price 'nonexistent' not found for product 'nif'");
 });
 
 it('ignores inactive products', function () {
@@ -153,7 +155,7 @@ it('ignores inactive products', function () {
     ]);
 
     expect(fn () => BillingRepository::productId('inactive_product'))
-        ->toThrow(\InvalidArgumentException::class);
+        ->toThrow(ProductNotFoundException::class);
 });
 
 it('ignores inactive prices', function () {
@@ -174,5 +176,5 @@ it('ignores inactive prices', function () {
     ]);
 
     expect(fn () => BillingRepository::priceId('nif', 'inactive_price'))
-        ->toThrow(\InvalidArgumentException::class);
+        ->toThrow(PriceNotFoundException::class);
 });

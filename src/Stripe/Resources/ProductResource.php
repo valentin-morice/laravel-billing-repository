@@ -50,4 +50,33 @@ class ProductResource implements ProductResourceInterface
     {
         return $this->retryable(fn () => Product::update($productId, ['active' => false]));
     }
+
+    /**
+     * @throws ProviderException|Throwable
+     */
+    public function all(): iterable
+    {
+        return $this->retryable(function () {
+            $hasMore = true;
+            $startingAfter = null;
+
+            while ($hasMore) {
+                $params = ['limit' => 100];
+                if ($startingAfter !== null) {
+                    $params['starting_after'] = $startingAfter;
+                }
+
+                $products = Product::all($params);
+
+                foreach ($products->data as $product) {
+                    yield $product;
+                }
+
+                $hasMore = $products->has_more;
+                if ($hasMore && count($products->data) > 0) {
+                    $startingAfter = end($products->data)->id;
+                }
+            }
+        });
+    }
 }

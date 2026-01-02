@@ -29,8 +29,8 @@ class CreateAction
                 'active' => true,
             ]);
         } catch (QueryException $e) {
-            // Handle unique constraint violation (duplicate provider_id or key)
-            if ($e->getCode() === '23000') {
+            // Handle unique constraint violation across all databases
+            if (isset($e->errorInfo[0]) && str_starts_with($e->errorInfo[0], '23')) {
                 return BillingProduct::where('provider_id', $stripeProductId)
                     ->orWhere('key', $productKey)
                     ->firstOrFail();

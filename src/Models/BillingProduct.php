@@ -19,24 +19,13 @@ use Illuminate\Support\Carbon;
  */
 class BillingProduct extends Model
 {
-    // BEGIN AUTO-GENERATED CONSTANTS - DO NOT EDIT MANUALLY
-    // END AUTO-GENERATED CONSTANTS
-
     use HasFactory;
 
-    protected $fillable = [
-        'key',
-        'provider_id',
-        'name',
-        'description',
-        'active',
-    ];
+    protected $fillable = ['key', 'provider_id', 'name', 'description', 'active'];
 
     protected function casts(): array
     {
-        return [
-            'active' => 'boolean',
-        ];
+        return ['active' => 'boolean'];
     }
 
     public function prices(): HasMany

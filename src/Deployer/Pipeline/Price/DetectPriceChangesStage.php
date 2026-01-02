@@ -28,17 +28,10 @@ class DetectPriceChangesStage extends AbstractDetectStage
 
             // Analyze each price in the product definition
             foreach ($definition->prices as $priceType => $priceDefinition) {
-                $existingPrice = null;
-
-                if ($existingProduct) {
-                    $existingPrice = BillingPrice::where('product_id', $existingProduct->id)
-                        ->where('type', $priceType)
-                        ->where('active', true)
-                        ->first();
-                }
+                /** @var BillingPrice|null $existingPrice */
+                $existingPrice = $existingProduct?->prices->firstWhere('type', $priceType);
 
                 if ($existingPrice) {
-                    // Detect changes between existing and new price
                     $changes = $this->detectChanges->handle(
                         $existingPrice,
                         $priceDefinition,
@@ -57,7 +50,6 @@ class DetectPriceChangesStage extends AbstractDetectStage
                         changes: $changes,
                     ));
                 } else {
-                    // Price doesn't exist, will be created
                     $context->addPriceChange(new PriceChange(
                         productKey: $productKey,
                         priceType: $priceType,
@@ -74,11 +66,9 @@ class DetectPriceChangesStage extends AbstractDetectStage
             if ($existingProduct) {
                 $configuredPriceTypes = array_keys($definition->prices);
                 /** @var Collection<int, BillingPrice> $removedPrices */
-                $removedPrices = $existingProduct->prices()
-                    ->where('active', true)
-                    ->whereNotIn('type', $configuredPriceTypes)
-                    ->get();
+                $removedPrices = $existingProduct->prices->whereNotIn('type', $configuredPriceTypes);
 
+                /** @var BillingPrice $price */
                 foreach ($removedPrices as $price) {
                     $context->addPriceChange(new PriceChange(
                         productKey: $productKey,

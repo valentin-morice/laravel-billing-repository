@@ -24,7 +24,11 @@ class DeployContext
      */
     public static function create(bool $isDryRun): self
     {
-        $definitions = config('billing.products', []);
+        $productsConfig = config('billing.products', []);
+
+        $definitions = array_map(function ($productData) {
+            return ProductDefinition::fromArray($productData);
+        }, $productsConfig);
 
         return new self(
             isDryRun: $isDryRun,

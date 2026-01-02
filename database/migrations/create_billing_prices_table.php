@@ -20,8 +20,9 @@ return new class extends Migration
             $table->boolean('active')->default(true);
             $table->timestamps();
 
-            $table->index('provider_id');
-            $table->index(['product_id', 'type']);
+            $table->index('active');
+            $table->index(['product_id', 'type', 'active']);
+            $table->unique(['product_id', 'type', 'active']);
         });
     }
 

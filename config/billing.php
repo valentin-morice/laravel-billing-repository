@@ -1,9 +1,5 @@
 <?php
 
-use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\PriceDefinition;
-use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\ProductDefinition;
-
-// config for ValentinMorice/LaravelBillingRepository
 return [
 
     /*
@@ -37,37 +33,44 @@ return [
     | The array key becomes the product identifier (stored in the database).
     |
     | After defining products, run: php artisan billing:deploy
+    | Or import from your provider: php artisan billing:import --generate-config
     |
     */
 
     'products' => [
 
-        // Example: One-time payment products
-        // 'nif' => new ProductDefinition(
-        //     name: 'NIF Portugal',
-        //     prices: [
-        //         'default' => new PriceDefinition(amount: 12000),  // €120.00
-        //         'zero' => new PriceDefinition(amount: 0),         // Free
+        // Example: One-time payment product
+        // 'nif' => [
+        //     'name' => 'NIF Portugal',
+        //     'prices' => [
+        //         'default' => [
+        //             'amount' => 12000,  // €120.00
+        //             'currency' => 'eur',
+        //         ],
+        //         'zero' => [
+        //             'amount' => 0,  // Free
+        //             'currency' => 'eur',
+        //         ],
         //     ],
-        //     description: 'Portuguese Tax Identification Number',
-        // ),
+        //     'description' => 'Portuguese Tax Identification Number',
+        // ],
 
         // Example: Subscription product
-        // 'premium' => new ProductDefinition(
-        //     name: 'Premium Subscription',
-        //     prices: [
-        //         'monthly' => new PriceDefinition(
-        //             amount: 999,
-        //             currency: 'eur',
-        //             recurring: ['interval' => 'month'],
-        //         ),
-        //         'yearly' => new PriceDefinition(
-        //             amount: 9900,
-        //             currency: 'eur',
-        //             recurring: ['interval' => 'year'],
-        //         ),
+        // 'premium' => [
+        //     'name' => 'Premium Subscription',
+        //     'prices' => [
+        //         'monthly' => [
+        //             'amount' => 999,
+        //             'currency' => 'eur',
+        //             'recurring' => ['interval' => 'month'],
+        //         ],
+        //         'yearly' => [
+        //             'amount' => 9900,
+        //             'currency' => 'eur',
+        //             'recurring' => ['interval' => 'year'],
+        //         ],
         //     ],
-        // ),
+        // ],
 
     ],
 

@@ -20,7 +20,7 @@ class CreateAction
             $product->provider_id,
             $definition->amount,
             $definition->currency,
-            $definition->recurring,
+            $definition->recurring?->toArray(),
             $definition->nickname
         );
 
@@ -31,13 +31,13 @@ class CreateAction
                 'provider_id' => $stripePriceId,
                 'amount' => $definition->amount,
                 'currency' => $definition->currency,
-                'recurring' => $definition->recurring,
+                'recurring' => $definition->recurring?->toArray(),
                 'nickname' => $definition->nickname,
                 'active' => true,
             ]);
         } catch (QueryException $e) {
-            // Handle unique constraint violation (duplicate provider_id)
-            if ($e->getCode() === '23000') {
+            // Handle unique constraint violation across all databases
+            if (isset($e->errorInfo[0]) && str_starts_with($e->errorInfo[0], '23')) {
                 return BillingPrice::where('provider_id', $stripePriceId)
                     ->firstOrFail();
             }

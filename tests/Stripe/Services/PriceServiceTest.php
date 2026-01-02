@@ -4,6 +4,7 @@ use Mockery as m;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\Resources\PriceResourceInterface;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\PriceDefinition;
+use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\RecurringConfig;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Service\PriceArchiveResult;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Service\PriceSyncResult;
 use ValentinMorice\LaravelBillingRepository\Deployer\Actions\DetectChangesAction;
@@ -67,7 +68,7 @@ it('creates recurring price with interval', function () {
     $service = new PriceService($client, new DetectChangesAction);
     $definition = new PriceDefinition(
         amount: 999,
-        recurring: ['interval' => 'month']
+        recurring: new RecurringConfig('month')
     );
 
     $result = $service->sync($product, 'monthly', $definition);
@@ -224,7 +225,7 @@ it('archives and recreates when recurring interval changes', function () {
     $service = new PriceService($client, new DetectChangesAction);
     $definition = new PriceDefinition(
         amount: 999,
-        recurring: ['interval' => 'year']
+        recurring: new RecurringConfig('year')
     );
 
     $result = $service->sync($product, 'subscription', $definition);

@@ -22,28 +22,13 @@ use Illuminate\Support\Carbon;
  */
 class BillingPrice extends Model
 {
-    // BEGIN AUTO-GENERATED CONSTANTS - DO NOT EDIT MANUALLY
-    // END AUTO-GENERATED CONSTANTS
-
     use HasFactory;
 
-    protected $fillable = [
-        'product_id',
-        'type',
-        'provider_id',
-        'amount',
-        'currency',
-        'recurring',
-        'nickname',
-        'active',
-    ];
+    protected $fillable = ['product_id', 'type', 'provider_id', 'amount', 'currency', 'recurring', 'nickname', 'active'];
 
     protected function casts(): array
     {
-        return [
-            'active' => 'boolean',
-            'recurring' => 'array',
-        ];
+        return ['active' => 'boolean', 'recurring' => 'array'];
     }
 
     public function product(): BelongsTo

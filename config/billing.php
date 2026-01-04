@@ -42,6 +42,7 @@ return [
         // Example: One-time payment product
         // 'nif' => [
         //     'name' => 'NIF Portugal',
+        //     'description' => 'Portuguese Tax Identification Number',
         //     'prices' => [
         //         'default' => [
         //             'amount' => 12000,  // €120.00
@@ -52,12 +53,19 @@ return [
         //             'currency' => 'eur',
         //         ],
         //     ],
-        //     'description' => 'Portuguese Tax Identification Number',
         // ],
 
-        // Example: Subscription product
+        // Example: Subscription product with metadata
         // 'premium' => [
         //     'name' => 'Premium Subscription',
+        //     'description' => 'Full-featured premium plan',
+        //
+        //     // Universal metadata (works with any provider)
+        //     'metadata' => [
+        //         'tier' => 'premium',
+        //         'feature_flag' => 'advanced_analytics',
+        //     ],
+        //
         //     'prices' => [
         //         'monthly' => [
         //             'amount' => 999,
@@ -68,6 +76,43 @@ return [
         //             'amount' => 9900,
         //             'currency' => 'eur',
         //             'recurring' => ['interval' => 'year'],
+        //         ],
+        //     ],
+        // ],
+
+        // Example: Product with Stripe-specific features
+        // 'enterprise' => [
+        //     'name' => 'Enterprise Plan',
+        //     'description' => 'Custom enterprise solution',
+        //
+        //     // Universal metadata
+        //     'metadata' => [
+        //         'tier' => 'enterprise',
+        //         'custom_field' => 'value',
+        //     ],
+        //
+        //     // Stripe-specific features (flat in config, not nested)
+        //     'tax_code' => 'txcd_10000000',  // Stripe tax code
+        //     'statement_descriptor' => 'MYAPP ENT',  // Appears on customer's credit card statement
+        //
+        //     'prices' => [
+        //         'monthly' => [
+        //             'amount' => 9999,
+        //             'currency' => 'usd',
+        //             'recurring' => ['interval' => 'month'],
+        //             'nickname' => 'Enterprise Monthly',
+        //
+        //             // Universal metadata
+        //             'metadata' => [
+        //                 'billing_cycle' => 'monthly',
+        //             ],
+        //
+        //             // Universal trial period
+        //             'trial_period_days' => 14,  // 14-day free trial
+        //
+        //             // Stripe-specific features
+        //             'tax_behavior' => 'exclusive',  // Tax calculated separately
+        //             'lookup_key' => 'enterprise_monthly',  // Unique identifier for easy price lookup
         //         ],
         //     ],
         // ],

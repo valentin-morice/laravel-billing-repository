@@ -6,15 +6,19 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
+use ValentinMorice\LaravelBillingRepository\Contracts\ProviderFeatureExtractorInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\Services\PriceServiceInterface;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\PriceDefinition;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Service\PriceArchiveResult;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Service\PriceSyncResult;
+use ValentinMorice\LaravelBillingRepository\Data\Enum\Stripe\ImmutablePriceFields;
+use ValentinMorice\LaravelBillingRepository\Deployer\Actions\CreatePriceComparisonObjectAction;
 use ValentinMorice\LaravelBillingRepository\Deployer\Actions\DetectChangesAction;
 use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Price\ArchiveAction;
 use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Price\CreateAction;
+use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Price\UpdateAction;
 use ValentinMorice\LaravelBillingRepository\Stripe\Services\Abstract\AbstractResourceService;
 
 /**
@@ -25,12 +29,17 @@ class PriceService extends AbstractResourceService implements PriceServiceInterf
     public function __construct(
         protected ProviderClientInterface $client,
         protected DetectChangesAction $detectChanges,
+        protected ProviderFeatureExtractorInterface $featureExtractor,
+        protected ?CreatePriceComparisonObjectAction $createComparisonObject = null,
         protected ?CreateAction $createAction = null,
+        protected ?UpdateAction $updateAction = null,
         protected ?ArchiveAction $archiveAction = null,
     ) {
         parent::__construct($client, $detectChanges);
 
+        $this->createComparisonObject ??= new CreatePriceComparisonObjectAction($featureExtractor);
         $this->createAction ??= new CreateAction($client);
+        $this->updateAction ??= new UpdateAction($client);
         $this->archiveAction ??= new ArchiveAction($client);
     }
 
@@ -43,17 +52,30 @@ class PriceService extends AbstractResourceService implements PriceServiceInterf
             $existingPrice = BillingPrice::where('product_id', $product->id)
                 ->where('type', $priceType)
                 ->where('active', true)
+                ->with('stripe')
                 ->lockForUpdate()
                 ->first();
 
             if ($existingPrice) {
-                $changes = $this->detectChanges->handle($existingPrice, $definition, ['amount', 'currency', 'recurring', 'nickname']);
+                $existingForComparison = $this->createComparisonObject->handle($existingPrice);
+
+                $changes = $this->detectChanges->handle(
+                    $existingForComparison,
+                    $definition,
+                    ['amount', 'currency', 'recurring', 'nickname', 'metadata', 'trialPeriodDays', 'stripe']
+                );
 
                 if (! empty($changes)) {
-                    $oldPrice = $this->archiveAction->handle($existingPrice);
-                    $newPrice = $this->createAction->handle($product, $priceType, $definition);
+                    if (! empty(ImmutablePriceFields::filterImmutable($changes))) {
+                        $oldPrice = $this->archiveAction->handle($existingPrice);
+                        $newPrice = $this->createAction->handle($product, $priceType, $definition);
 
-                    return PriceSyncResult::updated($newPrice, $oldPrice, $changes);
+                        return PriceSyncResult::updated($newPrice, $oldPrice, $changes);
+                    }
+
+                    $updatedPrice = $this->updateAction->handle($existingPrice, $definition);
+
+                    return PriceSyncResult::updated($updatedPrice, null, ImmutablePriceFields::filterMutable($changes));
                 }
 
                 return PriceSyncResult::unchanged($existingPrice);

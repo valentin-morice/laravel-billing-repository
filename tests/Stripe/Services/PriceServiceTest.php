@@ -33,10 +33,10 @@ it('creates new price when it does not exist', function () {
 
     $priceResource->shouldReceive('create')
         ->once()
-        ->with('prod_123', 1000, 'eur', null, null)
+        ->with('prod_123', 1000, 'eur', null, null, null, null, null, null)
         ->andReturn('price_456');
 
-    $service = new PriceService($client, new DetectChangesAction);
+    $service = new PriceService($client, new DetectChangesAction, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
     $definition = new PriceDefinition(amount: 1000);
 
     $result = $service->sync($product, 'default', $definition);
@@ -62,10 +62,10 @@ it('creates recurring price with interval', function () {
 
     $priceResource->shouldReceive('create')
         ->once()
-        ->with('prod_sub', 999, 'eur', ['interval' => 'month'], null)
+        ->with('prod_sub', 999, 'eur', ['interval' => 'month'], null, null, null, null, null)
         ->andReturn('price_monthly');
 
-    $service = new PriceService($client, new DetectChangesAction);
+    $service = new PriceService($client, new DetectChangesAction, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
     $definition = new PriceDefinition(
         amount: 999,
         recurring: new RecurringConfig('month')
@@ -100,7 +100,7 @@ it('returns unchanged when price already exists with same data', function () {
     $priceResource->shouldNotReceive('create');
     $priceResource->shouldNotReceive('archive');
 
-    $service = new PriceService($client, new DetectChangesAction);
+    $service = new PriceService($client, new DetectChangesAction, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
     $definition = new PriceDefinition(amount: 1000);
 
     $result = $service->sync($product, 'default', $definition);
@@ -135,10 +135,10 @@ it('archives old price and creates new when amount changes', function () {
 
     $priceResource->shouldReceive('create')
         ->once()
-        ->with('prod_123', 2000, 'eur', null, null)
+        ->with('prod_123', 2000, 'eur', null, null, null, null, null, null)
         ->andReturn('price_new');
 
-    $service = new PriceService($client, new DetectChangesAction);
+    $service = new PriceService($client, new DetectChangesAction, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
     $definition = new PriceDefinition(amount: 2000);
 
     $result = $service->sync($product, 'default', $definition);
@@ -180,10 +180,10 @@ it('archives and recreates when currency changes', function () {
 
     $priceResource->shouldReceive('create')
         ->once()
-        ->with('prod_123', 1000, 'usd', null, null)
+        ->with('prod_123', 1000, 'usd', null, null, null, null, null, null)
         ->andReturn('price_new');
 
-    $service = new PriceService($client, new DetectChangesAction);
+    $service = new PriceService($client, new DetectChangesAction, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
     $definition = new PriceDefinition(amount: 1000, currency: 'usd');
 
     $result = $service->sync($product, 'default', $definition);
@@ -219,10 +219,10 @@ it('archives and recreates when recurring interval changes', function () {
 
     $priceResource->shouldReceive('create')
         ->once()
-        ->with('prod_sub', 999, 'eur', ['interval' => 'year'], null)
+        ->with('prod_sub', 999, 'eur', ['interval' => 'year'], null, null, null, null, null)
         ->andReturn('price_new');
 
-    $service = new PriceService($client, new DetectChangesAction);
+    $service = new PriceService($client, new DetectChangesAction, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
     $definition = new PriceDefinition(
         amount: 999,
         recurring: new RecurringConfig('year')
@@ -251,7 +251,7 @@ it('handles multiple price types for same product', function () {
         ->withArgs(fn ($productId, $amount, $currency, $recurring, $nickname) => true)
         ->andReturn('price_default', 'price_premium');
 
-    $service = new PriceService($client, new DetectChangesAction);
+    $service = new PriceService($client, new DetectChangesAction, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
 
     $defaultResult = $service->sync($product, 'default', new PriceDefinition(1000));
     $premiumResult = $service->sync($product, 'premium', new PriceDefinition(2000));
@@ -291,7 +291,7 @@ it('archives removed prices not in configured list', function () {
         ->with('price_yearly')
         ->andReturn((object) ['id' => 'price_yearly']);
 
-    $service = new PriceService($client, new DetectChangesAction);
+    $service = new PriceService($client, new DetectChangesAction, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
     $result = $service->archiveRemoved($product, ['monthly']);
 
     expect($result)->toBeInstanceOf(PriceArchiveResult::class)
@@ -321,7 +321,7 @@ it('does not archive prices that are in configured list', function () {
 
     $priceResource->shouldNotReceive('archive');
 
-    $service = new PriceService($client, new DetectChangesAction);
+    $service = new PriceService($client, new DetectChangesAction, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
     $result = $service->archiveRemoved($product, ['monthly']);
 
     expect($result)->toBeInstanceOf(PriceArchiveResult::class)
@@ -342,10 +342,10 @@ it('creates price with nickname', function () {
 
     $priceResource->shouldReceive('create')
         ->once()
-        ->with('prod_123', 1000, 'eur', null, 'Monthly Plan')
+        ->with('prod_123', 1000, 'eur', null, 'Monthly Plan', null, null, null, null)
         ->andReturn('price_456');
 
-    $service = new PriceService($client, new DetectChangesAction);
+    $service = new PriceService($client, new DetectChangesAction, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
     $definition = new PriceDefinition(amount: 1000, nickname: 'Monthly Plan');
 
     $result = $service->sync($product, 'default', $definition);
@@ -354,7 +354,7 @@ it('creates price with nickname', function () {
         ->and($result->price->nickname)->toBe('Monthly Plan');
 });
 
-it('archives and recreates when nickname changes', function () {
+it('updates in-place when only nickname changes', function () {
     $product = BillingProduct::factory()->create([
         'key' => 'test_product',
         'provider_id' => 'prod_123',
@@ -373,17 +373,12 @@ it('archives and recreates when nickname changes', function () {
     $client = m::mock(ProviderClientInterface::class);
     $client->shouldReceive('price')->andReturn($priceResource);
 
-    $priceResource->shouldReceive('archive')
+    $priceResource->shouldReceive('update')
         ->once()
-        ->with('price_old')
+        ->with('price_old', ['nickname' => 'New Nickname'])
         ->andReturn((object) ['id' => 'price_old']);
 
-    $priceResource->shouldReceive('create')
-        ->once()
-        ->with('prod_123', 1000, 'eur', null, 'New Nickname')
-        ->andReturn('price_new');
-
-    $service = new PriceService($client, new DetectChangesAction);
+    $service = new PriceService($client, new DetectChangesAction, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
     $definition = new PriceDefinition(amount: 1000, nickname: 'New Nickname');
 
     $result = $service->sync($product, 'monthly', $definition);

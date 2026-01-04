@@ -5,11 +5,20 @@ namespace ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\Product;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\DeployContext;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\ProductChange;
 use ValentinMorice\LaravelBillingRepository\Data\Enum\ChangeTypeEnum;
+use ValentinMorice\LaravelBillingRepository\Deployer\Actions\CreateProductComparisonObjectAction;
+use ValentinMorice\LaravelBillingRepository\Deployer\Actions\DetectChangesAction;
 use ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\Abstract\AbstractDetectStage;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 
 class DetectProductChangesStage extends AbstractDetectStage
 {
+    public function __construct(
+        DetectChangesAction $detectChanges,
+        protected CreateProductComparisonObjectAction $createComparisonObject,
+    ) {
+        parent::__construct($detectChanges);
+    }
+
     /**
      * Detect product changes by comparing config definitions with existing products
      */
@@ -18,8 +27,8 @@ class DetectProductChangesStage extends AbstractDetectStage
         $productKeys = array_keys($context->definitions);
         $existingProducts = BillingProduct::whereIn('key', $productKeys)
             ->with(['prices' => function ($query) {
-                $query->where('active', true);
-            }])
+                $query->where('active', true)->with('stripe');
+            }, 'stripe'])
             ->get()
             ->keyBy('key');
 
@@ -28,10 +37,12 @@ class DetectProductChangesStage extends AbstractDetectStage
             $existingProduct = $existingProducts->get($productKey);
 
             if ($existingProduct) {
+                $existingForComparison = $this->createComparisonObject->handle($existingProduct);
+
                 $changes = $this->detectChanges->handle(
-                    $existingProduct,
+                    $existingForComparison,
                     $definition,
-                    ['name', 'description']
+                    ['name', 'description', 'metadata', 'stripe']
                 );
 
                 $type = empty($changes) ? ChangeTypeEnum::Unchanged : ChangeTypeEnum::Updated;

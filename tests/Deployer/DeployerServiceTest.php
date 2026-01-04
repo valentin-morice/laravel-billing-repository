@@ -37,8 +37,8 @@ it('orchestrates product and price creation end-to-end', function () {
     $client->shouldReceive('price')->andReturn($priceResource);
 
     $detectChanges = new DetectChangesAction;
-    $productService = new ProductService($client, $detectChanges);
-    $priceService = new PriceService($client, $detectChanges);
+    $productService = new ProductService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
+    $priceService = new PriceService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
 
     // Bind services to container
     app()->instance(ProductServiceInterface::class, $productService);
@@ -49,12 +49,12 @@ it('orchestrates product and price creation end-to-end', function () {
 
     $productResource->shouldReceive('create')
         ->once()
-        ->with('Test Product', null)
+        ->with('Test Product', null, null, null, null)
         ->andReturn('prod_123');
 
     $priceResource->shouldReceive('create')
         ->once()
-        ->with('prod_123', 1000, 'eur', null, null)
+        ->with('prod_123', 1000, 'eur', null, null, null, null, null, null)
         ->andReturn('price_456');
 
     config(['billing.products' => [
@@ -92,8 +92,8 @@ it('iterates through multiple products and prices correctly', function () {
     $client->shouldReceive('price')->andReturn($priceResource);
 
     $detectChanges = new DetectChangesAction;
-    $productService = new ProductService($client, $detectChanges);
-    $priceService = new PriceService($client, $detectChanges);
+    $productService = new ProductService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
+    $priceService = new PriceService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
 
     // Bind services to container
     app()->instance(ProductServiceInterface::class, $productService);
@@ -159,8 +159,8 @@ it('handles empty configuration gracefully', function () {
     $client->shouldReceive('price')->andReturn($priceResource);
 
     $detectChanges = new DetectChangesAction;
-    $productService = new ProductService($client, $detectChanges);
-    $priceService = new PriceService($client, $detectChanges);
+    $productService = new ProductService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
+    $priceService = new PriceService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
 
     // Bind services to container
     app()->instance(ProductServiceInterface::class, $productService);
@@ -224,8 +224,8 @@ it('archives prices that are removed from config', function () {
     $client->shouldReceive('price')->andReturn($priceResource);
 
     $detectChanges = new DetectChangesAction;
-    $productService = new ProductService($client, $detectChanges);
-    $priceService = new PriceService($client, $detectChanges);
+    $productService = new ProductService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
+    $priceService = new PriceService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
 
     // Bind services to container
     app()->instance(ProductServiceInterface::class, $productService);
@@ -295,8 +295,8 @@ it('archives products that are removed from config', function () {
     $client->shouldReceive('price')->andReturn($priceResource);
 
     $detectChanges = new DetectChangesAction;
-    $productService = new ProductService($client, $detectChanges);
-    $priceService = new PriceService($client, $detectChanges);
+    $productService = new ProductService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
+    $priceService = new PriceService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
 
     // Bind services to container
     app()->instance(ProductServiceInterface::class, $productService);

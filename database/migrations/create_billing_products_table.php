@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('provider_id')->unique();
             $table->string('name');
             $table->text('description')->nullable();
+            $table->json('metadata')->nullable();
             $table->boolean('active')->default(true);
             $table->timestamps();
 

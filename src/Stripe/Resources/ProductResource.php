@@ -15,13 +15,30 @@ class ProductResource implements ProductResourceInterface
     /**
      * @throws ProviderException|Throwable
      */
-    public function create(string $name, ?string $description = null): string
-    {
-        return $this->retryable(function () use ($name, $description) {
-            $product = Product::create([
-                'name' => $name,
-                'description' => $description,
-            ]);
+    public function create(
+        string $name,
+        ?string $description = null,
+        ?array $metadata = null,
+        ?string $taxCode = null,
+        ?string $statementDescriptor = null
+    ): string {
+        return $this->retryable(function () use ($name, $description, $metadata, $taxCode, $statementDescriptor) {
+            $data = ['name' => $name];
+
+            if ($description !== null) {
+                $data['description'] = $description;
+            }
+            if ($metadata !== null) {
+                $data['metadata'] = $metadata;
+            }
+            if ($taxCode !== null) {
+                $data['tax_code'] = $taxCode;
+            }
+            if ($statementDescriptor !== null) {
+                $data['statement_descriptor'] = $statementDescriptor;
+            }
+
+            $product = Product::create($data);
 
             return $product->id;
         });

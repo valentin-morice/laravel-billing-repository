@@ -4,7 +4,13 @@ namespace ValentinMorice\LaravelBillingRepository\Contracts\Resources;
 
 interface ProductResourceInterface
 {
-    public function create(string $name, ?string $description = null): string;
+    public function create(
+        string $name,
+        ?string $description = null,
+        ?array $metadata = null,
+        ?string $taxCode = null,
+        ?string $statementDescriptor = null
+    ): string;
 
     public function retrieve(string $productId): object;
 

@@ -27,10 +27,14 @@ readonly class PriceSyncResult
 
     /**
      * Factory for updated price
+     *
+     * @param  BillingPrice  $newPrice  The updated price (or new price if archived+created)
+     * @param  BillingPrice|null  $oldPrice  The archived price (null for in-place updates)
+     * @param  array<string, array{old: mixed, new: mixed}>  $changes
      */
     public static function updated(
         BillingPrice $newPrice,
-        BillingPrice $oldPrice,
+        ?BillingPrice $oldPrice,
         array $changes
     ): self {
         return new self(

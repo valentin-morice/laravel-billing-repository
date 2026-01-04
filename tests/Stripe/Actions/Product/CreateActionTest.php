@@ -22,7 +22,7 @@ it('creates product and stores in database', function () {
 
     $productResource->shouldReceive('create')
         ->once()
-        ->with('Test Product', null)
+        ->with('Test Product', null, null, null, null)
         ->andReturn('prod_123');
 
     $action = new CreateAction($client);
@@ -49,7 +49,7 @@ it('creates product with description', function () {
 
     $productResource->shouldReceive('create')
         ->once()
-        ->with('Premium Product', 'A premium subscription product')
+        ->with('Premium Product', 'A premium subscription product', null, null, null)
         ->andReturn('prod_456');
 
     $action = new CreateAction($client);

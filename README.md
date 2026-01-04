@@ -26,17 +26,11 @@ You can install the package via composer:
 composer require valentin-morice/laravel-billing-repository
 ```
 
-You can publish and run the migrations with:
+Publish the config file and migrations:
 
 ```bash
-php artisan vendor:publish --tag="laravel-billing-repository-migrations"
+php artisan vendor:publish --provider="ValentinMorice\LaravelBillingRepository\LaravelBillingRepositoryServiceProvider"
 php artisan migrate
-```
-
-You can publish the config file with:
-
-```bash
-php artisan vendor:publish --tag="laravel-billing-repository-config"
 ```
 
 ## Configuration

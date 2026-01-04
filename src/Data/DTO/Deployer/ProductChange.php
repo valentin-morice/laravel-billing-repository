@@ -2,7 +2,6 @@
 
 namespace ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer;
 
-use Illuminate\Database\Eloquent\Model;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\ProductDefinition;
 use ValentinMorice\LaravelBillingRepository\Data\Enum\ChangeTypeEnum;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;

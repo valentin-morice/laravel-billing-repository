@@ -31,7 +31,7 @@ it('creates one-time price and stores in database', function () {
 
     $priceResource->shouldReceive('create')
         ->once()
-        ->with('prod_123', 1000, 'eur', null, null)
+        ->with('prod_123', 1000, 'eur', null, null, null, null, null, null)
         ->andReturn('price_456');
 
     $action = new CreateAction($client);
@@ -65,7 +65,7 @@ it('creates recurring price with interval', function () {
 
     $priceResource->shouldReceive('create')
         ->once()
-        ->with('prod_sub', 999, 'eur', ['interval' => 'month'], null)
+        ->with('prod_sub', 999, 'eur', ['interval' => 'month'], null, null, null, null, null)
         ->andReturn('price_monthly');
 
     $action = new CreateAction($client);
@@ -95,7 +95,7 @@ it('creates price with custom currency', function () {
 
     $priceResource->shouldReceive('create')
         ->once()
-        ->with('prod_123', 2000, 'usd', null, null)
+        ->with('prod_123', 2000, 'usd', null, null, null, null, null, null)
         ->andReturn('price_usd');
 
     $action = new CreateAction($client);
@@ -121,7 +121,7 @@ it('creates price with nickname', function () {
 
     $priceResource->shouldReceive('create')
         ->once()
-        ->with('prod_123', 1000, 'eur', null, 'Monthly Plan')
+        ->with('prod_123', 1000, 'eur', null, 'Monthly Plan', null, null, null, null)
         ->andReturn('price_456');
 
     $action = new CreateAction($client);
@@ -146,7 +146,7 @@ it('creates price with all optional fields', function () {
 
     $priceResource->shouldReceive('create')
         ->once()
-        ->with('prod_sub', 1999, 'usd', ['interval' => 'year'], 'Annual Plan')
+        ->with('prod_sub', 1999, 'usd', ['interval' => 'year'], 'Annual Plan', null, null, null, null)
         ->andReturn('price_annual');
 
     $action = new CreateAction($client);
@@ -180,7 +180,7 @@ it('handles multiple price types for same product', function () {
 
     $priceResource->shouldReceive('create')
         ->twice()
-        ->withArgs(fn ($productId, $amount, $currency, $recurring, $nickname) => true)
+        ->withArgs(fn ($productId, $amount, $currency, $recurring, $nickname, $metadata, $trialPeriodDays, $taxBehavior, $lookupKey) => true)
         ->andReturn('price_default', 'price_premium');
 
     $action = new CreateAction($client);

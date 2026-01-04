@@ -6,11 +6,20 @@ use Illuminate\Database\Eloquent\Collection;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\DeployContext;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\PriceChange;
 use ValentinMorice\LaravelBillingRepository\Data\Enum\ChangeTypeEnum;
+use ValentinMorice\LaravelBillingRepository\Deployer\Actions\CreatePriceComparisonObjectAction;
+use ValentinMorice\LaravelBillingRepository\Deployer\Actions\DetectChangesAction;
 use ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\Abstract\AbstractDetectStage;
 use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
 
 class DetectPriceChangesStage extends AbstractDetectStage
 {
+    public function __construct(
+        DetectChangesAction $detectChanges,
+        protected CreatePriceComparisonObjectAction $createComparisonObject,
+    ) {
+        parent::__construct($detectChanges);
+    }
+
     /**
      * Detect price changes for all products
      */
@@ -32,10 +41,12 @@ class DetectPriceChangesStage extends AbstractDetectStage
                 $existingPrice = $existingProduct?->prices->firstWhere('type', $priceType);
 
                 if ($existingPrice) {
+                    $existingForComparison = $this->createComparisonObject->handle($existingPrice);
+
                     $changes = $this->detectChanges->handle(
-                        $existingPrice,
+                        $existingForComparison,
                         $priceDefinition,
-                        ['amount', 'currency', 'recurring', 'nickname']
+                        ['amount', 'currency', 'recurring', 'nickname', 'metadata', 'trialPeriodDays', 'stripe']
                     );
 
                     $type = empty($changes) ? ChangeTypeEnum::Unchanged : ChangeTypeEnum::Updated;

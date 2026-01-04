@@ -117,11 +117,11 @@ it('formats updated product with diffs', function () {
 
     $command->shouldReceive('line')
         ->once()
-        ->with('    - name: "Basic Plan" → "Starter Plan"');
+        ->with('    - name: Basic Plan → Starter Plan');
 
     $command->shouldReceive('line')
         ->once()
-        ->with('    - description: "Basic tier" → "Starter tier"');
+        ->with('    - description: Basic tier → Starter tier');
 
     $formatSummary->shouldReceive('handle')->once();
 

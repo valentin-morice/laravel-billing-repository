@@ -14,12 +14,14 @@ use ValentinMorice\LaravelBillingRepository\Commands\DeployCommand;
 use ValentinMorice\LaravelBillingRepository\Commands\ImportCommand;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderAdapterInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
+use ValentinMorice\LaravelBillingRepository\Contracts\ProviderFeatureExtractorInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\Services\PriceServiceInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\Services\ProductServiceInterface;
 use ValentinMorice\LaravelBillingRepository\Exceptions\IO\ConfigurationException;
 use ValentinMorice\LaravelBillingRepository\Stripe\Services\PriceService as StripePriceService;
 use ValentinMorice\LaravelBillingRepository\Stripe\Services\ProductService as StripeProductService;
 use ValentinMorice\LaravelBillingRepository\Stripe\StripeAdapter;
+use ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor;
 
 class LaravelBillingRepositoryServiceProvider extends PackageServiceProvider implements DeferrableProvider
 {
@@ -37,6 +39,10 @@ class LaravelBillingRepositoryServiceProvider extends PackageServiceProvider imp
         $this->app->singleton(ProviderClientInterface::class, function ($app) {
             return $app->make(ProviderAdapterInterface::class)->client();
         });
+
+        $this->registerProviderBinding(ProviderFeatureExtractorInterface::class, [
+            'stripe' => fn () => new StripeFeatureExtractor,
+        ]);
 
         $this->registerProviderBinding(ProductServiceInterface::class, [
             'stripe' => fn ($app) => $app->make(StripeProductService::class),
@@ -90,6 +96,8 @@ class LaravelBillingRepositoryServiceProvider extends PackageServiceProvider imp
             ->hasMigrations([
                 'create_billing_products_table',
                 'create_billing_prices_table',
+                'create_stripe_product_features_table',
+                'create_stripe_price_features_table',
             ])
             ->hasCommands([
                 DeployCommand::class,
@@ -107,6 +115,7 @@ class LaravelBillingRepositoryServiceProvider extends PackageServiceProvider imp
         return [
             ProviderAdapterInterface::class,
             ProviderClientInterface::class,
+            ProviderFeatureExtractorInterface::class,
             ProductServiceInterface::class,
             PriceServiceInterface::class,
         ];

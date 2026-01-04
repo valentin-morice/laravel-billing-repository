@@ -25,10 +25,10 @@ it('creates new product when it does not exist', function () {
 
     $productResource->shouldReceive('create')
         ->once()
-        ->with('Test Product', null)
+        ->with('Test Product', null, null, null, null)
         ->andReturn('prod_123');
 
-    $service = new ProductService($client, new DetectChangesAction);
+    $service = new ProductService($client, new DetectChangesAction, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
     $definition = new ProductDefinition(name: 'Test Product', prices: []);
 
     $result = $service->sync('test_product', $definition);
@@ -50,10 +50,10 @@ it('creates product with description', function () {
 
     $productResource->shouldReceive('create')
         ->once()
-        ->with('Product Name', 'Product description')
+        ->with('Product Name', 'Product description', null, null, null)
         ->andReturn('prod_456');
 
-    $service = new ProductService($client, new DetectChangesAction);
+    $service = new ProductService($client, new DetectChangesAction, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
     $definition = new ProductDefinition(
         name: 'Product Name',
         prices: [],
@@ -82,7 +82,7 @@ it('returns unchanged when product already exists with same data', function () {
     $productResource->shouldNotReceive('create');
     $productResource->shouldNotReceive('update');
 
-    $service = new ProductService($client, new DetectChangesAction);
+    $service = new ProductService($client, new DetectChangesAction, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
     $definition = new ProductDefinition(
         name: 'Existing Product',
         prices: [],
@@ -114,7 +114,7 @@ it('updates product when name changes', function () {
 
     $productResource->shouldNotReceive('create');
 
-    $service = new ProductService($client, new DetectChangesAction);
+    $service = new ProductService($client, new DetectChangesAction, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
     $definition = new ProductDefinition(name: 'New Name', prices: []);
 
     $result = $service->sync('my_product', $definition);
@@ -141,7 +141,7 @@ it('updates product when description changes', function () {
         ->with('prod_xyz', ['description' => 'New description'])
         ->andReturn((object) ['id' => 'prod_xyz']);
 
-    $service = new ProductService($client, new DetectChangesAction);
+    $service = new ProductService($client, new DetectChangesAction, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
     $definition = new ProductDefinition(
         name: 'Product Name',
         prices: [],
@@ -172,7 +172,7 @@ it('updates product when both name and description change', function () {
         ->with('prod_123', ['name' => 'New Name', 'description' => 'New description'])
         ->andReturn((object) ['id' => 'prod_123']);
 
-    $service = new ProductService($client, new DetectChangesAction);
+    $service = new ProductService($client, new DetectChangesAction, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
     $definition = new ProductDefinition(
         name: 'New Name',
         prices: [],
@@ -221,7 +221,7 @@ it('archives products not in configured keys list', function () {
         ->with('prod_3')
         ->andReturn((object) ['id' => 'prod_3']);
 
-    $service = new ProductService($client, new DetectChangesAction);
+    $service = new ProductService($client, new DetectChangesAction, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
     $result = $service->archiveRemoved(['product_1']);
 
     expect($result)->toBeInstanceOf(ProductArchiveResult::class)
@@ -250,7 +250,7 @@ it('does not archive products that are in configured list', function () {
 
     $productResource->shouldNotReceive('archive');
 
-    $service = new ProductService($client, new DetectChangesAction);
+    $service = new ProductService($client, new DetectChangesAction, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
     $result = $service->archiveRemoved(['product_1', 'product_2']);
 
     expect($result)->toBeInstanceOf(ProductArchiveResult::class)
@@ -277,7 +277,7 @@ it('does not archive already inactive products', function () {
 
     $productResource->shouldNotReceive('archive');
 
-    $service = new ProductService($client, new DetectChangesAction);
+    $service = new ProductService($client, new DetectChangesAction, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
     $result = $service->archiveRemoved(['active_product']);
 
     expect($result)->toBeInstanceOf(ProductArchiveResult::class)

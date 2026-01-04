@@ -39,9 +39,9 @@ class FormatAnalysisAction
             // Show diffs for updates
             if ($change->type === ChangeTypeEnum::Updated && ! empty($change->changes)) {
                 foreach ($change->changes as $field => $diff) {
-                    $old = $diff['old'] ?? 'null';
-                    $new = $diff['new'] ?? 'null';
-                    $command->line("    - {$field}: \"{$old}\" → \"{$new}\"");
+                    $old = $this->formatValue($diff['old']);
+                    $new = $this->formatValue($diff['new']);
+                    $command->line("    - {$field}: {$old} → {$new}");
                 }
             }
         }
@@ -77,8 +77,8 @@ class FormatAnalysisAction
                         $old = $this->formatCurrency($diff['old'], $currency);
                         $new = $this->formatCurrency($diff['new'], $currency);
                     } else {
-                        $old = is_array($diff['old']) ? json_encode($diff['old']) : ($diff['old'] ?? 'null');
-                        $new = is_array($diff['new']) ? json_encode($diff['new']) : ($diff['new'] ?? 'null');
+                        $old = $this->formatValue($diff['old']);
+                        $new = $this->formatValue($diff['new']);
                     }
                     $command->line("    - {$field}: {$old} → {$new}");
                 }
@@ -127,5 +127,29 @@ class FormatAnalysisAction
         }
 
         return "/every {$count} {$interval}s";
+    }
+
+    /**
+     * Format a value for display (handles arrays, objects, scalars, null)
+     */
+    private function formatValue(mixed $value): string
+    {
+        if ($value === null) {
+            return 'null';
+        }
+
+        if (is_array($value)) {
+            return json_encode($value);
+        }
+
+        if (is_object($value)) {
+            if (method_exists($value, 'toArray')) {
+                return json_encode($value->toArray());
+            } else {
+                return json_encode($value);
+            }
+        }
+
+        return (string) $value;
     }
 }

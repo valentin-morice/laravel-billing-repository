@@ -36,7 +36,7 @@ it('product resource create method signature is correct', function () {
     $reflection = new ReflectionClass(ProductResource::class);
     $method = $reflection->getMethod('create');
 
-    expect($method->getNumberOfParameters())->toBe(2)
+    expect($method->getNumberOfParameters())->toBe(5)
         ->and($method->getNumberOfRequiredParameters())->toBe(1);
 });
 
@@ -60,7 +60,7 @@ it('price resource create method signature is correct', function () {
     $reflection = new ReflectionClass(PriceResource::class);
     $method = $reflection->getMethod('create');
 
-    expect($method->getNumberOfParameters())->toBe(5)
+    expect($method->getNumberOfParameters())->toBe(9)
         ->and($method->getNumberOfRequiredParameters())->toBe(3);
 });
 

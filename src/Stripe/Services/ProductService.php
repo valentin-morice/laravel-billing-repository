@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
+use ValentinMorice\LaravelBillingRepository\Contracts\ProviderFeatureExtractorInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\Services\ProductServiceInterface;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\ProductDefinition;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Service\ProductArchiveResult;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Service\ProductSyncResult;
+use ValentinMorice\LaravelBillingRepository\Deployer\Actions\CreateProductComparisonObjectAction;
 use ValentinMorice\LaravelBillingRepository\Deployer\Actions\DetectChangesAction;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 use ValentinMorice\LaravelBillingRepository\Stripe\Actions\Product\ArchiveAction;
@@ -25,12 +27,15 @@ class ProductService extends AbstractResourceService implements ProductServiceIn
     public function __construct(
         protected ProviderClientInterface $client,
         protected DetectChangesAction $detectChanges,
+        protected ProviderFeatureExtractorInterface $featureExtractor,
+        protected ?CreateProductComparisonObjectAction $createComparisonObject = null,
         protected ?CreateAction $createAction = null,
         protected ?UpdateAction $updateAction = null,
         protected ?ArchiveAction $archiveAction = null,
     ) {
         parent::__construct($client, $detectChanges);
 
+        $this->createComparisonObject ??= new CreateProductComparisonObjectAction($featureExtractor);
         $this->createAction ??= new CreateAction($client);
         $this->updateAction ??= new UpdateAction($client);
         $this->archiveAction ??= new ArchiveAction($client);
@@ -43,11 +48,18 @@ class ProductService extends AbstractResourceService implements ProductServiceIn
     {
         return DB::transaction(function () use ($productKey, $definition) {
             $existingProduct = BillingProduct::where('key', $productKey)
+                ->with('stripe')
                 ->lockForUpdate()
                 ->first();
 
             if ($existingProduct) {
-                $changes = $this->detectChanges->handle($existingProduct, $definition, ['name', 'description']);
+                $existingForComparison = $this->createComparisonObject->handle($existingProduct);
+
+                $changes = $this->detectChanges->handle(
+                    $existingForComparison,
+                    $definition,
+                    ['name', 'description', 'metadata', 'stripe']
+                );
 
                 if (! empty($changes)) {
                     $product = $this->updateAction->handle($existingProduct, $definition);

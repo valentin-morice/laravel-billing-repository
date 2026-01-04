@@ -9,10 +9,21 @@ interface PriceResourceInterface
         int $amount,
         string $currency,
         ?array $recurring = null,
-        ?string $nickname = null
+        ?string $nickname = null,
+        ?array $metadata = null,
+        ?int $trialPeriodDays = null,
+        ?string $taxBehavior = null,
+        ?string $lookupKey = null
     ): string;
 
     public function archive(string $priceId): object;
+
+    /**
+     * Update mutable price fields
+     *
+     * @param  array<string, mixed>  $params
+     */
+    public function update(string $priceId, array $params): object;
 
     /**
      * List all prices for a specific product

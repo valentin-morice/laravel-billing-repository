@@ -2,6 +2,8 @@
 
 namespace ValentinMorice\LaravelBillingRepository\Data\DTO\Config;
 
+use ValentinMorice\LaravelBillingRepository\Data\DTO\Stripe\StripeProductFeatures;
+
 readonly class ProductDefinition
 {
     /**
@@ -11,6 +13,8 @@ readonly class ProductDefinition
         public string $name,
         public array $prices,
         public ?string $description = null,
+        public ?array $metadata = null,
+        public ?StripeProductFeatures $stripe = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -24,6 +28,8 @@ readonly class ProductDefinition
             name: $data['name'],
             prices: $prices,
             description: $data['description'] ?? null,
+            metadata: $data['metadata'] ?? null,
+            stripe: StripeProductFeatures::fromArray($data),
         );
     }
 
@@ -41,6 +47,12 @@ readonly class ProductDefinition
 
         if ($this->description !== null) {
             $array['description'] = $this->description;
+        }
+        if ($this->metadata !== null) {
+            $array['metadata'] = $this->metadata;
+        }
+        if ($this->stripe !== null) {
+            $array = array_merge($array, $this->stripe->toArray());
         }
 
         return $array;

@@ -2,8 +2,6 @@
 
 namespace ValentinMorice\LaravelBillingRepository\Deployer\Actions;
 
-use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\RecurringConfig;
-
 class DetectChangesAction
 {
     /**
@@ -23,12 +21,19 @@ class DetectChangesAction
     }
 
     /**
-     * Compare two values, handling RecurringConfig objects
+     * Compare two values, handling DTO objects with toArray() method
      */
     private function valuesAreEqual(mixed $oldValue, mixed $newValue): bool
     {
-        if ($newValue instanceof RecurringConfig) {
+        if (is_object($newValue) && method_exists($newValue, 'toArray')) {
             $newValue = $newValue->toArray();
+        }
+
+        if (is_object($oldValue)) {
+            $oldValue = (array) $oldValue;
+        }
+        if (is_object($newValue)) {
+            $newValue = (array) $newValue;
         }
 
         return $oldValue === $newValue;

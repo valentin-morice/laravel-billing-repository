@@ -17,12 +17,13 @@ return new class extends Migration
             $table->string('currency', 3);
             $table->json('recurring')->nullable();
             $table->string('nickname')->nullable();
+            $table->json('metadata')->nullable();
+            $table->integer('trial_period_days')->nullable();
             $table->boolean('active')->default(true);
             $table->timestamps();
 
             $table->index('active');
             $table->index(['product_id', 'type', 'active']);
-            $table->unique(['product_id', 'type', 'active']);
         });
     }
 

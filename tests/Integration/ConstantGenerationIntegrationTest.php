@@ -39,10 +39,10 @@ it('can use BillingRepository facade with manually created data', function () {
     ]);
 
     // Use BillingRepository facade
-    $productId = BillingRepository::productId('nif');
-    $priceId = BillingRepository::priceId('nif', 'default');
-    $retrievedProduct = BillingRepository::product('nif');
-    $prices = BillingRepository::prices('nif');
+    $productId = BillingRepository::resource()->productId('nif');
+    $priceId = BillingRepository::resource()->priceId('nif', 'default');
+    $retrievedProduct = BillingRepository::resource()->product('nif');
+    $prices = BillingRepository::resource()->prices('nif');
 
     expect($productId)->toBe('prod_123')
         ->and($priceId)->toBe('price_456')
@@ -98,10 +98,10 @@ it('billing repository facade works correctly with active scope', function () {
     ]);
 
     // Verify facade only returns active product
-    $productId = BillingRepository::productId('active_product');
+    $productId = BillingRepository::resource()->productId('active_product');
     expect($productId)->toBe('prod_active');
 
     // Verify inactive product throws exception
-    expect(fn () => BillingRepository::productId('inactive_product'))
+    expect(fn () => BillingRepository::resource()->productId('inactive_product'))
         ->toThrow(ProductNotFoundException::class);
 });

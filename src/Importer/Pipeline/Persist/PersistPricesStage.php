@@ -3,6 +3,7 @@
 namespace ValentinMorice\LaravelBillingRepository\Importer\Pipeline\Persist;
 
 use Illuminate\Support\Str;
+use ValentinMorice\LaravelBillingRepository\Contracts\ProviderFeatureExtractorInterface;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Importer\ImportContext;
 use ValentinMorice\LaravelBillingRepository\Importer\Actions\UpsertPriceAction;
 use ValentinMorice\LaravelBillingRepository\Importer\Pipeline\Abstract\AbstractPersistStage;
@@ -11,6 +12,7 @@ class PersistPricesStage extends AbstractPersistStage
 {
     public function __construct(
         protected UpsertPriceAction $upsertPrice,
+        protected ProviderFeatureExtractorInterface $featureExtractor,
     ) {}
 
     protected function persist(ImportContext $context): void
@@ -37,6 +39,9 @@ class PersistPricesStage extends AbstractPersistStage
                             recurring: $providerPrice->recurring ? $this->cleanRecurringData($providerPrice->recurring) : null,
                             nickname: $providerPrice->nickname ?? null,
                             active: $providerPrice->active,
+                            trialPeriodDays: $providerPrice->billing_scheme === 'tiered' ? null : ($providerPrice->trial_period_days ?? null),
+                            metadata: $this->featureExtractor->extractMetadata($providerPrice),
+                            providerFeatures: $this->featureExtractor->extractPriceFeaturesApi($providerPrice),
                         );
 
                         $context->recordPriceImport($providerPrice->id, $result);

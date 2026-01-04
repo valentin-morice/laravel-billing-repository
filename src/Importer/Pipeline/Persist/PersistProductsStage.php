@@ -2,6 +2,7 @@
 
 namespace ValentinMorice\LaravelBillingRepository\Importer\Pipeline\Persist;
 
+use ValentinMorice\LaravelBillingRepository\Contracts\ProviderFeatureExtractorInterface;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Importer\ImportContext;
 use ValentinMorice\LaravelBillingRepository\Importer\Actions\GenerateProductKeyAction;
 use ValentinMorice\LaravelBillingRepository\Importer\Actions\UpsertProductAction;
@@ -13,6 +14,7 @@ class PersistProductsStage extends AbstractPersistStage
     public function __construct(
         protected UpsertProductAction $upsertProduct,
         protected GenerateProductKeyAction $generateKey,
+        protected ProviderFeatureExtractorInterface $featureExtractor,
     ) {}
 
     protected function persist(ImportContext $context): void
@@ -30,6 +32,8 @@ class PersistProductsStage extends AbstractPersistStage
                         name: $providerProduct->name,
                         description: $providerProduct->description ?? null,
                         active: $providerProduct->active,
+                        metadata: $this->featureExtractor->extractMetadata($providerProduct),
+                        providerFeatures: $this->featureExtractor->extractProductFeaturesApi($providerProduct),
                     );
 
                     $context->recordProductImport($providerProduct->id, $result);

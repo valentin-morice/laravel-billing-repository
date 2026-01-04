@@ -16,6 +16,8 @@ class UpsertProductAction
         string $name,
         ?string $description,
         bool $active,
+        ?array $metadata = null,
+        ?array $providerFeatures = null,
     ): ImportedProduct {
         $existing = BillingProduct::where('provider_id', $providerId)->first();
 
@@ -24,10 +26,13 @@ class UpsertProductAction
                 'key' => $key,
                 'name' => $name,
                 'description' => $description,
+                'metadata' => $metadata,
                 'active' => $active,
             ]);
 
-            return new ImportedProduct($existing->fresh(), false);
+            $this->persistProviderFeatures($existing, $providerFeatures);
+
+            return new ImportedProduct($existing->fresh([config('billing.provider')]), false);
         }
 
         $product = BillingProduct::create([
@@ -35,9 +40,29 @@ class UpsertProductAction
             'provider_id' => $providerId,
             'name' => $name,
             'description' => $description,
+            'metadata' => $metadata,
             'active' => $active,
         ]);
 
-        return new ImportedProduct($product, true);
+        $this->persistProviderFeatures($product, $providerFeatures);
+
+        return new ImportedProduct($product->fresh([config('billing.provider')]), true);
+    }
+
+    private function persistProviderFeatures(BillingProduct $product, ?array $features): void
+    {
+        $providerName = config('billing.provider');
+
+        if (empty($features)) {
+            $product->{$providerName}()->delete();
+
+            return;
+        }
+
+        if ($product->{$providerName}) {
+            $product->{$providerName}->update($features);
+        } else {
+            $product->{$providerName}()->create($features);
+        }
     }
 }

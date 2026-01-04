@@ -19,6 +19,9 @@ class UpsertPriceAction
         ?array $recurring,
         ?string $nickname,
         bool $active,
+        ?int $trialPeriodDays = null,
+        ?array $metadata = null,
+        ?array $providerFeatures = null,
     ): ImportedPrice {
         $existing = BillingPrice::where('provider_id', $providerId)->first();
 
@@ -30,10 +33,14 @@ class UpsertPriceAction
                 'currency' => $currency,
                 'recurring' => $recurring,
                 'nickname' => $nickname,
+                'metadata' => $metadata,
+                'trial_period_days' => $trialPeriodDays,
                 'active' => $active,
             ]);
 
-            return new ImportedPrice($existing->fresh(), false);
+            $this->persistProviderFeatures($existing, $providerFeatures);
+
+            return new ImportedPrice($existing->fresh([config('billing.provider')]), false);
         }
 
         $price = BillingPrice::create([
@@ -44,9 +51,30 @@ class UpsertPriceAction
             'currency' => $currency,
             'recurring' => $recurring,
             'nickname' => $nickname,
+            'metadata' => $metadata,
+            'trial_period_days' => $trialPeriodDays,
             'active' => $active,
         ]);
 
-        return new ImportedPrice($price, true);
+        $this->persistProviderFeatures($price, $providerFeatures);
+
+        return new ImportedPrice($price->fresh([config('billing.provider')]), true);
+    }
+
+    private function persistProviderFeatures(BillingPrice $price, ?array $features): void
+    {
+        $providerName = config('billing.provider');
+
+        if (empty($features)) {
+            $price->{$providerName}()->delete();
+
+            return;
+        }
+
+        if ($price->{$providerName}) {
+            $price->{$providerName}->update($features);
+        } else {
+            $price->{$providerName}()->create($features);
+        }
     }
 }

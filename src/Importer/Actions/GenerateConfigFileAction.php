@@ -124,8 +124,8 @@ class GenerateConfigFileAction
         $productItems = [];
 
         foreach ($context->importedProducts as $imported) {
-            $product = $imported->product;
-            $prices = BillingPrice::active()->where('product_id', $product->id)->get();
+            $product = $imported->product->load('stripe');
+            $prices = BillingPrice::active()->where('product_id', $product->id)->with('stripe')->get();
 
             $productItems[] = new ArrayItem(
                 $this->buildProductDefinition($product, $prices),
@@ -156,6 +156,27 @@ class GenerateConfigFileAction
             $items[] = new ArrayItem(
                 new String_($product->description),
                 new String_('description')
+            );
+        }
+
+        if ($product->metadata) {
+            $items[] = new ArrayItem(
+                $this->buildMetadataArray($product->metadata),
+                new String_('metadata')
+            );
+        }
+
+        if ($product->stripe?->tax_code) {
+            $items[] = new ArrayItem(
+                new String_($product->stripe->tax_code),
+                new String_('tax_code')
+            );
+        }
+
+        if ($product->stripe?->statement_descriptor) {
+            $items[] = new ArrayItem(
+                new String_($product->stripe->statement_descriptor),
+                new String_('statement_descriptor')
             );
         }
 
@@ -227,6 +248,69 @@ class GenerateConfigFileAction
             );
         }
 
+        if ($price->metadata) {
+            $items[] = new ArrayItem(
+                $this->buildMetadataArray($price->metadata),
+                new String_('metadata')
+            );
+        }
+
+        if ($price->trial_period_days) {
+            $items[] = new ArrayItem(
+                new Int_($price->trial_period_days),
+                new String_('trial_period_days')
+            );
+        }
+
+        if ($price->stripe?->tax_behavior) {
+            $items[] = new ArrayItem(
+                new String_($price->stripe->tax_behavior),
+                new String_('tax_behavior')
+            );
+        }
+
+        if ($price->stripe?->lookup_key) {
+            $items[] = new ArrayItem(
+                new String_($price->stripe->lookup_key),
+                new String_('lookup_key')
+            );
+        }
+
         return new Array_($items);
+    }
+
+    /**
+     * Build metadata array from metadata
+     */
+    private function buildMetadataArray(?array $metadata): Array_
+    {
+        $items = [];
+
+        if (is_array($metadata)) {
+            foreach ($metadata as $key => $value) {
+                $items[] = new ArrayItem(
+                    $this->buildMetadataValue($value),
+                    new String_((string) $key)
+                );
+            }
+        }
+
+        return new Array_($items);
+    }
+
+    /**
+     * Convert metadata value to AST node
+     */
+    private function buildMetadataValue(mixed $value): Array_|String_|Int_
+    {
+        if (is_array($value)) {
+            return $this->buildMetadataArray($value);
+        } elseif (is_bool($value)) {
+            return new Int_($value ? 1 : 0);
+        } elseif (is_int($value)) {
+            return new Int_($value);
+        } else {
+            return new String_((string) $value);
+        }
     }
 }

@@ -22,7 +22,7 @@ it('facade priceId method works', function () {
         'active' => true,
     ]);
 
-    $priceId = BillingRepository::resource()->priceId('nif', 'default');
+    $priceId = BillingRepository::priceId('nif', 'default');
 
     expect($priceId)->toBe('price_456');
 });
@@ -35,7 +35,7 @@ it('facade productId method works', function () {
         'active' => true,
     ]);
 
-    $productId = BillingRepository::resource()->productId('premium');
+    $productId = BillingRepository::productId('premium');
 
     expect($productId)->toBe('prod_abc');
 });
@@ -104,6 +104,6 @@ it('facade throws exception for missing product', function () {
         'active' => true,
     ]);
 
-    expect(fn () => BillingRepository::resource()->productId('nonexistent'))
+    expect(fn () => BillingRepository::productId('nonexistent'))
         ->toThrow(ProductNotFoundException::class, "Product 'nonexistent' not found");
 });

@@ -23,7 +23,7 @@ it('retrieves price ID using product key and price type', function () {
         'active' => true,
     ]);
 
-    $priceId = BillingRepository::resource()->priceId('nif', 'default');
+    $priceId = BillingRepository::priceId('nif', 'default');
 
     expect($priceId)->toBe('price_456');
 });
@@ -36,7 +36,7 @@ it('retrieves product ID using product key', function () {
         'active' => true,
     ]);
 
-    $productId = BillingRepository::resource()->productId('premium');
+    $productId = BillingRepository::productId('premium');
 
     expect($productId)->toBe('prod_abc');
 });
@@ -114,7 +114,7 @@ it('throws exception for missing product', function () {
         'active' => true,
     ]);
 
-    expect(fn () => BillingRepository::resource()->productId('nonexistent'))
+    expect(fn () => BillingRepository::productId('nonexistent'))
         ->toThrow(ProductNotFoundException::class, "Product 'nonexistent' not found");
 });
 
@@ -135,7 +135,7 @@ it('throws exception for missing price', function () {
         'active' => true,
     ]);
 
-    expect(fn () => BillingRepository::resource()->priceId('nif', 'nonexistent'))
+    expect(fn () => BillingRepository::priceId('nif', 'nonexistent'))
         ->toThrow(PriceNotFoundException::class, "Price 'nonexistent' not found for product 'nif'");
 });
 
@@ -154,7 +154,7 @@ it('ignores inactive products', function () {
         'active' => false,
     ]);
 
-    expect(fn () => BillingRepository::resource()->productId('inactive_product'))
+    expect(fn () => BillingRepository::productId('inactive_product'))
         ->toThrow(ProductNotFoundException::class);
 });
 
@@ -175,6 +175,6 @@ it('ignores inactive prices', function () {
         'active' => false,
     ]);
 
-    expect(fn () => BillingRepository::resource()->priceId('nif', 'inactive_price'))
+    expect(fn () => BillingRepository::priceId('nif', 'inactive_price'))
         ->toThrow(PriceNotFoundException::class);
 });

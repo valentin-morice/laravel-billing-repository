@@ -2,6 +2,7 @@
 
 namespace ValentinMorice\LaravelBillingRepository\Facades\Support;
 
+use Illuminate\Database\Eloquent\Collection;
 use ValentinMorice\LaravelBillingRepository\Exceptions\Models\PriceNotFoundException;
 use ValentinMorice\LaravelBillingRepository\Exceptions\Models\ProductNotFoundException;
 use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
@@ -22,9 +23,9 @@ class BillingResourceRepository
     /**
      * Get all active product models from database
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, BillingProduct>
+     * @return Collection<int, BillingProduct>
      */
-    public function products(): \Illuminate\Database\Eloquent\Collection
+    public function products(): Collection
     {
         return BillingProduct::active()->with('prices')->get();
     }
@@ -54,39 +55,21 @@ class BillingResourceRepository
     /**
      * Get all active prices for a product
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, BillingPrice>
+     * @return Collection<int, BillingPrice>
      *
      * @throws ProductNotFoundException
      */
-    public function prices(string $productKey): \Illuminate\Database\Eloquent\Collection
+    public function prices(string $productKey): Collection
     {
         $product = $this->findActiveProduct($productKey, withPrices: true);
 
-        /** @var \Illuminate\Database\Eloquent\Collection<int, BillingPrice> */
+        /** @var Collection<int, BillingPrice> */
         return $product->prices()->where('active', true)->get();
     }
 
     /**
-     * Get Stripe price ID for use with Cashier
-     *
-     * @throws ProductNotFoundException
-     * @throws PriceNotFoundException
-     */
-    public function priceId(string $productKey, string $priceType): string
-    {
-        return $this->price($productKey, $priceType)->provider_id;
-    }
-
-    /**
-     * Get Stripe product ID for use with Cashier
-     *
      * @throws ProductNotFoundException
      */
-    public function productId(string $productKey): string
-    {
-        return $this->findActiveProduct($productKey)->provider_id;
-    }
-
     private function findActiveProduct(string $productKey, bool $withPrices = false): BillingProduct
     {
         $query = BillingProduct::active()

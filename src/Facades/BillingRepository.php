@@ -2,8 +2,12 @@
 
 namespace ValentinMorice\LaravelBillingRepository\Facades;
 
+use ValentinMorice\LaravelBillingRepository\Exceptions\Models\PriceNotFoundException;
+use ValentinMorice\LaravelBillingRepository\Exceptions\Models\ProductNotFoundException;
 use ValentinMorice\LaravelBillingRepository\Facades\Support\BillingConfigRepository;
 use ValentinMorice\LaravelBillingRepository\Facades\Support\BillingResourceRepository;
+use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
+use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 
 class BillingRepository
 {
@@ -21,5 +25,51 @@ class BillingRepository
     public static function resource(): BillingResourceRepository
     {
         return new BillingResourceRepository;
+    }
+
+    /**
+     * Get Stripe price ID for use with Cashier
+     *
+     * @throws ProductNotFoundException
+     * @throws PriceNotFoundException
+     */
+    public static function priceId(string $productKey, string $priceType): string
+    {
+        $product = BillingProduct::active()
+            ->where('key', $productKey)
+            ->first();
+
+        if (! $product) {
+            throw new ProductNotFoundException("Product '{$productKey}' not found or not active");
+        }
+
+        $price = BillingPrice::active()
+            ->where('product_id', $product->id)
+            ->where('type', $priceType)
+            ->first();
+
+        if (! $price) {
+            throw PriceNotFoundException::forProductAndType($productKey, $priceType);
+        }
+
+        return $price->provider_id;
+    }
+
+    /**
+     * Get Stripe product ID for use with Cashier
+     *
+     * @throws ProductNotFoundException
+     */
+    public static function productId(string $productKey): string
+    {
+        $product = BillingProduct::active()
+            ->where('key', $productKey)
+            ->first();
+
+        if (! $product) {
+            throw new ProductNotFoundException("Product '{$productKey}' not found or not active");
+        }
+
+        return $product->provider_id;
     }
 }

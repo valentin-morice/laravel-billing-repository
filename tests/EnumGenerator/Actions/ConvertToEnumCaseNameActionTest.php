@@ -1,9 +1,9 @@
 <?php
 
-use ValentinMorice\LaravelBillingRepository\ConstantGenerator\Actions\ConvertToConstantNameAction;
+use ValentinMorice\LaravelBillingRepository\EnumGenerator\Actions\ConvertToEnumCaseNameAction;
 
 it('converts snake_case to UPPER_CASE', function () {
-    $action = new ConvertToConstantNameAction;
+    $action = new ConvertToEnumCaseNameAction;
 
     expect($action->handle('nif'))->toBe('NIF')
         ->and($action->handle('social_sec'))->toBe('SOCIAL_SEC')
@@ -11,7 +11,7 @@ it('converts snake_case to UPPER_CASE', function () {
 });
 
 it('handles hyphens and spaces by converting to underscores', function () {
-    $action = new ConvertToConstantNameAction;
+    $action = new ConvertToEnumCaseNameAction;
 
     expect($action->handle('test-123'))->toBe('TEST_123')
         ->and($action->handle('test 123'))->toBe('TEST_123')
@@ -19,29 +19,29 @@ it('handles hyphens and spaces by converting to underscores', function () {
 });
 
 it('handles numeric prefixes by adding underscore', function () {
-    $action = new ConvertToConstantNameAction;
+    $action = new ConvertToEnumCaseNameAction;
 
     expect($action->handle('123test'))->toBe('_123TEST')
         ->and($action->handle('3d_secure'))->toBe('_3D_SECURE');
 });
 
-it('handles reserved keywords by appending _CONST', function () {
-    $action = new ConvertToConstantNameAction;
+it('handles reserved keywords by appending _CASE', function () {
+    $action = new ConvertToEnumCaseNameAction;
 
-    expect($action->handle('class'))->toBe('CLASS_CONST')
-        ->and($action->handle('function'))->toBe('FUNCTION_CONST')
-        ->and($action->handle('const'))->toBe('CONST_CONST');
+    expect($action->handle('class'))->toBe('CLASS_CASE')
+        ->and($action->handle('function'))->toBe('FUNCTION_CASE')
+        ->and($action->handle('const'))->toBe('CONST_CASE');
 });
 
 it('removes invalid characters', function () {
-    $action = new ConvertToConstantNameAction;
+    $action = new ConvertToEnumCaseNameAction;
 
     expect($action->handle('test@example'))->toBe('TESTEXAMPLE')
         ->and($action->handle('test#123!'))->toBe('TEST123');
 });
 
 it('handles multiple keys and returns array mapping', function () {
-    $action = new ConvertToConstantNameAction;
+    $action = new ConvertToEnumCaseNameAction;
 
     $result = $action->handleMultiple(['nif', 'social_sec', 'premium']);
 
@@ -53,7 +53,7 @@ it('handles multiple keys and returns array mapping', function () {
 });
 
 it('handles collisions by appending numeric suffix', function () {
-    $action = new ConvertToConstantNameAction;
+    $action = new ConvertToEnumCaseNameAction;
 
     // Both 'nif' and 'NIF' would normalize to 'NIF'
     $result = $action->handleMultiple(['nif', 'NIF', 'Nif']);
@@ -66,19 +66,19 @@ it('handles collisions by appending numeric suffix', function () {
 });
 
 it('handles empty string gracefully', function () {
-    $action = new ConvertToConstantNameAction;
+    $action = new ConvertToEnumCaseNameAction;
 
     expect($action->handle(''))->toBe('');
 });
 
 it('preserves underscores in valid names', function () {
-    $action = new ConvertToConstantNameAction;
+    $action = new ConvertToEnumCaseNameAction;
 
     expect($action->handle('my_constant_name'))->toBe('MY_CONSTANT_NAME');
 });
 
 it('handles consecutive separators', function () {
-    $action = new ConvertToConstantNameAction;
+    $action = new ConvertToEnumCaseNameAction;
 
     expect($action->handle('test---name'))->toBe('TEST_NAME')
         ->and($action->handle('test   name'))->toBe('TEST_NAME');

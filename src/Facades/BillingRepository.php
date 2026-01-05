@@ -2,6 +2,8 @@
 
 namespace ValentinMorice\LaravelBillingRepository\Facades;
 
+use ValentinMorice\LaravelBillingRepository\Data\Enum\Consumer\PriceKey;
+use ValentinMorice\LaravelBillingRepository\Data\Enum\Consumer\ProductKey;
 use ValentinMorice\LaravelBillingRepository\Exceptions\Models\PriceNotFoundException;
 use ValentinMorice\LaravelBillingRepository\Exceptions\Models\ProductNotFoundException;
 use ValentinMorice\LaravelBillingRepository\Facades\Support\BillingConfigRepository;
@@ -28,12 +30,10 @@ class BillingRepository
     }
 
     /**
-     * Get Stripe price ID for use with Cashier
-     *
      * @throws ProductNotFoundException
      * @throws PriceNotFoundException
      */
-    public static function priceId(string $productKey, string $priceType): string
+    public static function priceId(string|ProductKey $productKey, string|PriceKey $priceType): string
     {
         $product = BillingProduct::active()
             ->where('key', $productKey)
@@ -56,11 +56,9 @@ class BillingRepository
     }
 
     /**
-     * Get Stripe product ID for use with Cashier
-     *
      * @throws ProductNotFoundException
      */
-    public static function productId(string $productKey): string
+    public static function productId(string|ProductKey $productKey): string
     {
         $product = BillingProduct::active()
             ->where('key', $productKey)

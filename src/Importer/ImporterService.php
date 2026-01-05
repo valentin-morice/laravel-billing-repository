@@ -10,7 +10,7 @@ use ValentinMorice\LaravelBillingRepository\Importer\Pipeline\Fetch\FetchProduct
 use ValentinMorice\LaravelBillingRepository\Importer\Pipeline\Persist\PersistPricesStage;
 use ValentinMorice\LaravelBillingRepository\Importer\Pipeline\Persist\PersistProductsStage;
 use ValentinMorice\LaravelBillingRepository\Importer\Pipeline\Post\GenerateConfigStage;
-use ValentinMorice\LaravelBillingRepository\Importer\Pipeline\Post\GenerateConstantsStage;
+use ValentinMorice\LaravelBillingRepository\Importer\Pipeline\Post\GenerateEnumsStage;
 
 class ImporterService
 {
@@ -34,7 +34,7 @@ class ImporterService
                 PersistProductsStage::class,
                 PersistPricesStage::class,
                 GenerateConfigStage::class,
-                GenerateConstantsStage::class,
+                GenerateEnumsStage::class,
             ])
             ->thenReturn();
 

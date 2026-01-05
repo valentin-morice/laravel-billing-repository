@@ -3,14 +3,14 @@
 namespace ValentinMorice\LaravelBillingRepository\Importer\Pipeline\Post;
 
 use Closure;
-use ValentinMorice\LaravelBillingRepository\ConstantGenerator\ConstantGeneratorService;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Importer\ImportContext;
+use ValentinMorice\LaravelBillingRepository\EnumGenerator\EnumGeneratorService;
 use ValentinMorice\LaravelBillingRepository\Importer\Pipeline\Abstract\AbstractImportStage;
 
-class GenerateConstantsStage extends AbstractImportStage
+class GenerateEnumsStage extends AbstractImportStage
 {
     public function __construct(
-        protected ConstantGeneratorService $generator,
+        protected EnumGeneratorService $generator,
     ) {}
 
     public function handle(ImportContext $context, Closure $next): mixed

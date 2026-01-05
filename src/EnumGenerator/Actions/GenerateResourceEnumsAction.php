@@ -1,15 +1,15 @@
 <?php
 
-namespace ValentinMorice\LaravelBillingRepository\ConstantGenerator\Actions;
+namespace ValentinMorice\LaravelBillingRepository\EnumGenerator\Actions;
 
 use ValentinMorice\LaravelBillingRepository\Data\Enum\ModelType;
 use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 
-class GenerateResourceConstantsAction
+class GenerateResourceEnumsAction
 {
     public function __construct(
-        protected ConvertToConstantNameAction $convertToConstantName,
+        protected ConvertToEnumCaseNameAction $convertToEnumCaseName,
     ) {}
 
     /**
@@ -29,6 +29,6 @@ class GenerateResourceConstantsAction
                 ->all(),
         };
 
-        return $this->convertToConstantName->handleMultiple($keys);
+        return $this->convertToEnumCaseName->handleMultiple($keys);
     }
 }

@@ -56,22 +56,21 @@ php artisan billing:deploy
 This automatically:
 - Creates/updates products and prices in Stripe
 - Caches them in your local database
-- **Generates type-safe constants in your models**
+- **Generates type-safe enums for your products and prices**
 
 **3. Use type-safe accessors in your code:**
 
 ```php
+use ValentinMorice\LaravelBillingRepository\Data\Enum\Consumer\{ProductKey, PriceKey};
 use ValentinMorice\LaravelBillingRepository\Facades\BillingRepository;
-use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
-use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
 
 // Option 1: Direct facade access with string keys
 $priceId = BillingRepository::priceId('premium', 'monthly');
 
-// Option 2: Type-safe constants (auto-generated after deploy)
+// Option 2: Type-safe enums (auto-generated after deploy)
 $priceId = BillingRepository::priceId(
-    BillingProduct::PREMIUM,    // 'premium'
-    BillingPrice::MONTHLY       // 'monthly'
+    ProductKey::PREMIUM,    // 'premium'
+    PriceKey::MONTHLY       // 'monthly'
 );
 
 // Use in your application
@@ -86,7 +85,7 @@ $checkout = $user->checkout('price_1ABCxyz123', ['quantity' => 1]);
 
 // ✅ After: Type-safe, refactor-friendly
 $checkout = $user->checkout(
-    BillingRepository::priceId(BillingProduct::PREMIUM, BillingPrice::MONTHLY),
+    BillingRepository::priceId(ProductKey::PREMIUM, PriceKey::MONTHLY),
     ['quantity' => 1]
 );
 ```
@@ -169,29 +168,29 @@ php artisan billing:deploy
 
 The command shows a plan of changes (create/update/archive) before applying them.
 
-### 4. Auto-Generated Type-Safe Constants
+### 4. Auto-Generated Type-Safe Enums
 
-After running `billing:deploy` or `billing:import`, the package automatically generates public constants in your model files using PHP Parser:
+After running `billing:deploy` or `billing:import`, the package automatically generates backed enum files:
 
-**BillingProduct.php** (auto-generated):
+**src/Data/Enum/Consumer/ProductKey.php** (auto-generated):
 ```php
-class BillingProduct extends Model
-{
-    public const BASIC = 'basic';
-    public const PREMIUM = 'premium';
+namespace ValentinMorice\LaravelBillingRepository\Data\Enum\Consumer;
 
-    // ... rest of model code
+enum ProductKey: string
+{
+    case BASIC = 'basic';
+    case PREMIUM = 'premium';
 }
 ```
 
-**BillingPrice.php** (auto-generated):
+**src/Data/Enum/Consumer/PriceKey.php** (auto-generated):
 ```php
-class BillingPrice extends Model
-{
-    public const MONTHLY = 'monthly';
-    public const YEARLY = 'yearly';
+namespace ValentinMorice\LaravelBillingRepository\Data\Enum\Consumer;
 
-    // ... rest of model code
+enum PriceKey: string
+{
+    case MONTHLY = 'monthly';
+    case YEARLY = 'yearly';
 }
 ```
 
@@ -201,29 +200,29 @@ class BillingPrice extends Model
 - **Type Safety**: Catch typos at development time, not runtime
 - **Self-Documenting**: See all available products/prices in one place
 
-**Constant Naming:**
+**Enum Case Naming:**
 - Product keys: Converted to uppercase (e.g., `'premium'` → `PREMIUM`)
 - Price types: Converted to uppercase (e.g., `'monthly'` → `MONTHLY`)
 - Handles special cases: Separators become underscores (e.g., `'pro-plan'` → `PRO_PLAN`)
-- Avoids collisions: Reserved PHP keywords get `_CONST` suffix
+- Avoids collisions: Reserved PHP keywords get `_CASE` suffix
 
 ### 5. Type-Safe Facade
 
 Access provider IDs throughout your codebase:
 
 ```php
+use ValentinMorice\LaravelBillingRepository\Data\Enum\Consumer\{ProductKey, PriceKey};
 use ValentinMorice\LaravelBillingRepository\Facades\BillingRepository;
-use ValentinMorice\LaravelBillingRepository\Models\{BillingProduct, BillingPrice};
 
-// Get a specific price ID (with constants)
-$priceId = BillingRepository::priceId(BillingProduct::PREMIUM, BillingPrice::MONTHLY);
+// Get a specific price ID (with enums)
+$priceId = BillingRepository::priceId(ProductKey::PREMIUM, PriceKey::MONTHLY);
 // Returns: "price_1ABC..." (Stripe price ID)
 
 // Or use string keys directly
 $priceId = BillingRepository::priceId('premium', 'monthly');
 
 // Get a product ID
-$productId = BillingRepository::productId(BillingProduct::PREMIUM);
+$productId = BillingRepository::productId(ProductKey::PREMIUM);
 // Returns: "prod_XYZ..." (Stripe product ID)
 
 // Use in your application
@@ -284,20 +283,20 @@ BILLING_API_KEY=sk_test_...
 ### Starting Fresh
 1. Define products in `config/billing.php`
 2. Run `php artisan billing:deploy` to create them in Stripe
-3. Constants are auto-generated in `BillingProduct` and `BillingPrice` models
-4. Use `BillingRepository::priceId(BillingProduct::PREMIUM, BillingPrice::MONTHLY)` in your code
+3. Enums are auto-generated in `src/Data/Enum/Consumer/`
+4. Use `BillingRepository::priceId(ProductKey::PREMIUM, PriceKey::MONTHLY)` in your code
 
 ### Migrating Existing Stripe Setup
 1. Run `php artisan billing:import --generate-config` to pull existing products
 2. Review and version-control the generated config
-3. Constants are auto-generated from imported data
-4. Use constants to replace hardcoded IDs throughout your codebase
+3. Enums are auto-generated from imported data
+4. Use enums to replace hardcoded IDs throughout your codebase
 
 ### Making Changes
 1. Update `config/billing.php`
 2. Run `php artisan billing:deploy --dry-run` to preview
 3. Run `php artisan billing:deploy` to apply
-4. Constants are automatically regenerated
+4. Enums are automatically regenerated
 
 ## Real-World Example
 
@@ -353,7 +352,7 @@ public function checkout(Request $request)
 public function upgrade(User $user)
 {
     $user->subscription('default')->swap(
-        BillingRepository::priceId(BillingProduct::PRO, BillingPrice::YEARLY)
+        BillingRepository::priceId(ProductKey::PRO, PriceKey::YEARLY)
     );
 }
 
@@ -361,9 +360,9 @@ public function upgrade(User $user)
 public function pricing()
 {
     return view('pricing', [
-        'starterMonthly' => BillingRepository::priceId(BillingProduct::STARTER, BillingPrice::MONTHLY),
-        'proMonthly' => BillingRepository::priceId(BillingProduct::PRO, BillingPrice::MONTHLY),
-        'proYearly' => BillingRepository::priceId(BillingProduct::PRO, BillingPrice::YEARLY),
+        'starterMonthly' => BillingRepository::priceId(ProductKey::STARTER, PriceKey::MONTHLY),
+        'proMonthly' => BillingRepository::priceId(ProductKey::PRO, PriceKey::MONTHLY),
+        'proYearly' => BillingRepository::priceId(ProductKey::PRO, PriceKey::YEARLY),
     ]);
 }
 ```

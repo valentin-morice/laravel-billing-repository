@@ -1,8 +1,8 @@
 <?php
 
-namespace ValentinMorice\LaravelBillingRepository\ConstantGenerator\Actions;
+namespace ValentinMorice\LaravelBillingRepository\EnumGenerator\Actions;
 
-class ConvertToConstantNameAction
+class ConvertToEnumCaseNameAction
 {
     private const RESERVED_KEYWORDS = [
         'CLASS', 'FUNCTION', 'CONST', 'TRAIT', 'INTERFACE', 'NAMESPACE',
@@ -32,7 +32,7 @@ class ConvertToConstantNameAction
 
         // Handle reserved keywords
         if (in_array($name, self::RESERVED_KEYWORDS, true)) {
-            $name .= '_CONST';
+            $name .= '_CASE';
         }
 
         return $name;

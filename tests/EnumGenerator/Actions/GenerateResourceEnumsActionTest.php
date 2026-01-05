@@ -1,7 +1,7 @@
 <?php
 
-use ValentinMorice\LaravelBillingRepository\ConstantGenerator\Actions\ConvertToConstantNameAction;
-use ValentinMorice\LaravelBillingRepository\ConstantGenerator\Actions\GenerateResourceConstantsAction;
+use ValentinMorice\LaravelBillingRepository\EnumGenerator\Actions\ConvertToEnumCaseNameAction;
+use ValentinMorice\LaravelBillingRepository\EnumGenerator\Actions\GenerateResourceEnumsAction;
 use ValentinMorice\LaravelBillingRepository\Data\Enum\ModelType;
 use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
@@ -28,7 +28,7 @@ it('generates constants from active products only', function () {
         'active' => false,
     ]);
 
-    $action = new GenerateResourceConstantsAction(new ConvertToConstantNameAction);
+    $action = new GenerateResourceEnumsAction(new ConvertToEnumCaseNameAction);
     $result = $action->handle(ModelType::Product);
 
     expect($result)->toBe([
@@ -45,7 +45,7 @@ it('returns array mapping product keys to constant names', function () {
         'active' => true,
     ]);
 
-    $action = new GenerateResourceConstantsAction(new ConvertToConstantNameAction);
+    $action = new GenerateResourceEnumsAction(new ConvertToEnumCaseNameAction);
     $result = $action->handle(ModelType::Product);
 
     expect($result)->toBeArray()
@@ -54,7 +54,7 @@ it('returns array mapping product keys to constant names', function () {
 });
 
 it('handles empty product database gracefully', function () {
-    $action = new GenerateResourceConstantsAction(new ConvertToConstantNameAction);
+    $action = new GenerateResourceEnumsAction(new ConvertToEnumCaseNameAction);
     $result = $action->handle(ModelType::Product);
 
     expect($result)->toBe([]);
@@ -82,7 +82,7 @@ it('sorts product results consistently by key', function () {
         'active' => true,
     ]);
 
-    $action = new GenerateResourceConstantsAction(new ConvertToConstantNameAction);
+    $action = new GenerateResourceEnumsAction(new ConvertToEnumCaseNameAction);
     $result = $action->handle(ModelType::Product);
 
     expect(array_keys($result))->toBe(['alpha', 'beta', 'zebra']);
@@ -123,11 +123,11 @@ it('generates constants from active price types only', function () {
         'active' => false,
     ]);
 
-    $action = new GenerateResourceConstantsAction(new ConvertToConstantNameAction);
+    $action = new GenerateResourceEnumsAction(new ConvertToEnumCaseNameAction);
     $result = $action->handle(ModelType::Price);
 
     expect($result)->toBe([
-        'default' => 'DEFAULT_CONST',
+        'default' => 'DEFAULT_CASE',
         'monthly' => 'MONTHLY',
     ]);
 });
@@ -159,7 +159,7 @@ it('returns distinct price types', function () {
         'active' => true,
     ]);
 
-    $action = new GenerateResourceConstantsAction(new ConvertToConstantNameAction);
+    $action = new GenerateResourceEnumsAction(new ConvertToEnumCaseNameAction);
     $result = $action->handle(ModelType::Price);
 
     expect($result)->toBe([
@@ -169,7 +169,7 @@ it('returns distinct price types', function () {
 });
 
 it('handles empty price database gracefully', function () {
-    $action = new GenerateResourceConstantsAction(new ConvertToConstantNameAction);
+    $action = new GenerateResourceEnumsAction(new ConvertToEnumCaseNameAction);
     $result = $action->handle(ModelType::Price);
 
     expect($result)->toBe([]);
@@ -210,7 +210,7 @@ it('sorts price results consistently by type', function () {
         'active' => true,
     ]);
 
-    $action = new GenerateResourceConstantsAction(new ConvertToConstantNameAction);
+    $action = new GenerateResourceEnumsAction(new ConvertToEnumCaseNameAction);
     $result = $action->handle(ModelType::Price);
 
     expect(array_keys($result))->toBe(['annual', 'monthly', 'zero']);

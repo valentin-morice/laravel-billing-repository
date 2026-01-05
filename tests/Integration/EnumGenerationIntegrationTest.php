@@ -1,23 +1,23 @@
 <?php
 
-use ValentinMorice\LaravelBillingRepository\ConstantGenerator\ConstantGeneratorService;
 use ValentinMorice\LaravelBillingRepository\Deployer\DeployerService;
-use ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\Post\GenerateConstantsStage;
+use ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\Post\GenerateEnumsStage;
+use ValentinMorice\LaravelBillingRepository\EnumGenerator\EnumGeneratorService;
 use ValentinMorice\LaravelBillingRepository\Exceptions\Models\ProductNotFoundException;
 use ValentinMorice\LaravelBillingRepository\Facades\BillingRepository;
 use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 
-it('constant generator service can be resolved from container', function () {
-    $service = app(ConstantGeneratorService::class);
+it('enum generator service can be resolved from container', function () {
+    $service = app(EnumGeneratorService::class);
 
-    expect($service)->toBeInstanceOf(ConstantGeneratorService::class);
+    expect($service)->toBeInstanceOf(EnumGeneratorService::class);
 });
 
-it('generate constants stage can be resolved from container', function () {
-    $stage = app(GenerateConstantsStage::class);
+it('generate enums stage can be resolved from container', function () {
+    $stage = app(GenerateEnumsStage::class);
 
-    expect($stage)->toBeInstanceOf(GenerateConstantsStage::class);
+    expect($stage)->toBeInstanceOf(GenerateEnumsStage::class);
 });
 
 it('can use BillingRepository facade with manually created data', function () {

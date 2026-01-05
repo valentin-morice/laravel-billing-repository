@@ -34,3 +34,6 @@ testbench.yaml
 
 # AI Assistants
 CLAUDE.md
+
+# Auto-generated Enums
+src/Data/Enum/Consumer/

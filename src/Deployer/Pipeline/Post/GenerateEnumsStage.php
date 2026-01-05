@@ -2,14 +2,14 @@
 
 namespace ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\Post;
 
-use ValentinMorice\LaravelBillingRepository\ConstantGenerator\ConstantGeneratorService;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\DeployContext;
 use ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\Abstract\AbstractProcessStage;
+use ValentinMorice\LaravelBillingRepository\EnumGenerator\EnumGeneratorService;
 
-class GenerateConstantsStage extends AbstractProcessStage
+class GenerateEnumsStage extends AbstractProcessStage
 {
     public function __construct(
-        protected ConstantGeneratorService $generator,
+        protected EnumGeneratorService $generator,
     ) {}
 
     protected function process(DeployContext $context): void

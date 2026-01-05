@@ -1,8 +1,8 @@
 <?php
 
+use ValentinMorice\LaravelBillingRepository\Data\Enum\ModelType;
 use ValentinMorice\LaravelBillingRepository\EnumGenerator\Actions\ConvertToEnumCaseNameAction;
 use ValentinMorice\LaravelBillingRepository\EnumGenerator\Actions\GenerateResourceEnumsAction;
-use ValentinMorice\LaravelBillingRepository\Data\Enum\ModelType;
 use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 

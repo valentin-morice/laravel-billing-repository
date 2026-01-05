@@ -1,7 +1,6 @@
 <?php
 
 use Mockery as m;
-use ValentinMorice\LaravelBillingRepository\EnumGenerator\EnumGeneratorService;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\Resources\PriceResourceInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\Resources\ProductResourceInterface;
@@ -10,6 +9,7 @@ use ValentinMorice\LaravelBillingRepository\Contracts\Services\ProductServiceInt
 use ValentinMorice\LaravelBillingRepository\Deployer\Actions\BuildChangeSetAction;
 use ValentinMorice\LaravelBillingRepository\Deployer\Actions\DetectChangesAction;
 use ValentinMorice\LaravelBillingRepository\Deployer\DeployerService;
+use ValentinMorice\LaravelBillingRepository\EnumGenerator\EnumGeneratorService;
 use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 use ValentinMorice\LaravelBillingRepository\Stripe\Services\PriceService;

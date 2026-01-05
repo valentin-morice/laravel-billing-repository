@@ -1,9 +1,9 @@
 <?php
 
+use ValentinMorice\LaravelBillingRepository\Data\Enum\ModelType;
 use ValentinMorice\LaravelBillingRepository\EnumGenerator\Actions\GenerateEnumFileAction;
 use ValentinMorice\LaravelBillingRepository\EnumGenerator\Actions\GenerateResourceEnumsAction;
 use ValentinMorice\LaravelBillingRepository\EnumGenerator\EnumGeneratorService;
-use ValentinMorice\LaravelBillingRepository\Data\Enum\ModelType;
 
 it('generates enums for both products and prices', function () {
     $generateResourceEnums = Mockery::mock(GenerateResourceEnumsAction::class);

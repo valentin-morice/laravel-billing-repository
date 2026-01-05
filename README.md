@@ -29,13 +29,21 @@ Define products and prices in PHP config files, deploy them to your billing prov
 
 ```php
 'products' => [
-    'premium' => new ProductDefinition(
-        name: 'Premium Plan',
-        prices: [
-            'monthly' => new PriceDefinition(amount: 999, currency: 'eur', recurring: ['interval' => 'month']),
-            'yearly' => new PriceDefinition(amount: 9900, currency: 'eur', recurring: ['interval' => 'year']),
+    'premium' => [
+        'name' => 'Premium Plan',
+        'prices' => [
+            'monthly' => [
+                'amount' => 999,
+                'currency' => 'eur',
+                'recurring' => ['interval' => 'month'],
+            ],
+            'yearly' => [
+                'amount' => 9900,
+                'currency' => 'eur',
+                'recurring' => ['interval' => 'year'],
+            ],
         ],
-    ),
+    ],
 ],
 ```
 
@@ -94,35 +102,41 @@ The package stores products and prices locally in `billing_products` and `billin
 
 ### 2. Config-as-Code Workflow
 
-Define your billing structure in `config/billing.php` using type-safe DTOs:
+Define your billing structure in `config/billing.php` using simple arrays:
 
 ```php
-use ValentinMorice\LaravelBillingRepository\Data\{ProductDefinition, PriceDefinition};
-
 return [
     'provider' => env('BILLING_PROVIDER', 'stripe'),
     'api_key' => env('BILLING_API_KEY'),
 
     'products' => [
-        'basic' => new ProductDefinition(
-            name: 'Basic Plan',
-            description: 'Perfect for individuals',
-            prices: [
-                'monthly' => new PriceDefinition(
-                    amount: 499,
-                    currency: 'eur',
-                    recurring: ['interval' => 'month']
-                ),
+        'basic' => [
+            'name' => 'Basic Plan',
+            'description' => 'Perfect for individuals',
+            'prices' => [
+                'monthly' => [
+                    'amount' => 499,
+                    'currency' => 'eur',
+                    'recurring' => ['interval' => 'month'],
+                ],
             ],
-        ),
-        'premium' => new ProductDefinition(
-            name: 'Premium Plan',
-            description: 'For power users',
-            prices: [
-                'monthly' => new PriceDefinition(amount: 999, currency: 'eur', recurring: ['interval' => 'month']),
-                'yearly' => new PriceDefinition(amount: 9900, currency: 'eur', recurring: ['interval' => 'year']),
+        ],
+        'premium' => [
+            'name' => 'Premium Plan',
+            'description' => 'For power users',
+            'prices' => [
+                'monthly' => [
+                    'amount' => 999,
+                    'currency' => 'eur',
+                    'recurring' => ['interval' => 'month'],
+                ],
+                'yearly' => [
+                    'amount' => 9900,
+                    'currency' => 'eur',
+                    'recurring' => ['interval' => 'year'],
+                ],
             ],
-        ),
+        ],
     ],
 ];
 ```
@@ -290,19 +304,31 @@ BILLING_API_KEY=sk_test_...
 ```php
 // config/billing.php
 'products' => [
-    'starter' => new ProductDefinition(
-        name: 'Starter Plan',
-        prices: [
-            'monthly' => new PriceDefinition(amount: 999, currency: 'eur', recurring: ['interval' => 'month']),
+    'starter' => [
+        'name' => 'Starter Plan',
+        'prices' => [
+            'monthly' => [
+                'amount' => 999,
+                'currency' => 'eur',
+                'recurring' => ['interval' => 'month'],
+            ],
         ],
-    ),
-    'pro' => new ProductDefinition(
-        name: 'Pro Plan',
-        prices: [
-            'monthly' => new PriceDefinition(amount: 2999, currency: 'eur', recurring: ['interval' => 'month']),
-            'yearly' => new PriceDefinition(amount: 29900, currency: 'eur', recurring: ['interval' => 'year']),
+    ],
+    'pro' => [
+        'name' => 'Pro Plan',
+        'prices' => [
+            'monthly' => [
+                'amount' => 2999,
+                'currency' => 'eur',
+                'recurring' => ['interval' => 'month'],
+            ],
+            'yearly' => [
+                'amount' => 29900,
+                'currency' => 'eur',
+                'recurring' => ['interval' => 'year'],
+            ],
         ],
-    ),
+    ],
 ],
 ```
 

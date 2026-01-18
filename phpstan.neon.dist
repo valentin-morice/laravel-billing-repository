@@ -11,5 +11,3 @@ parameters:
     checkOctaneCompatibility: true
     checkModelProperties: true
     reportUnmatchedIgnoredErrors: false
-    ignoreErrors:
-        - '#Parameter \$\w+ of method .+BillingRepository::(priceId|productId)\(\) has invalid type .+Consumer\\(ProductKey|PriceKey)#'

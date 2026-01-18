@@ -119,4 +119,25 @@ return [
 
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Generated Enums Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configure where generated enum files (ProductKey, PriceKey) are placed.
+    | By default, enums are generated in your app's Enums/Billing directory.
+    |
+    | After importing or deploying, you can use these enums for type-safe
+    | access to your products and prices:
+    |
+    |   BillingRepository::product(ProductKey::Premium)
+    |   BillingRepository::price(PriceKey::PremiumMonthly)
+    |
+    */
+
+    'enums' => [
+        'path' => app_path('Enums/Billing'),
+        'namespace' => 'App\\Enums\\Billing',
+    ],
+
 ];

@@ -10,6 +10,9 @@ use ValentinMorice\LaravelBillingRepository\Importer\Pipeline\Abstract\AbstractP
 
 class PersistPricesStage extends AbstractPersistStage
 {
+    /** @var array<int, array<string, int>> Track used keys per product: [productId => [key => count]] */
+    private array $usedKeys = [];
+
     public function __construct(
         protected UpsertPriceAction $upsertPrice,
         protected ProviderFeatureExtractorInterface $featureExtractor,
@@ -28,12 +31,12 @@ class PersistPricesStage extends AbstractPersistStage
                 ->chunk(500)
                 ->each(function ($chunk) use ($context, $billingProduct) {
                     foreach ($chunk as $index => $providerPrice) {
-                        $type = $this->determineType($providerPrice, $index);
+                        $key = $this->determineUniqueKey($billingProduct->id, $providerPrice, $index);
 
                         $result = $this->upsertPrice->handle(
                             productId: $billingProduct->id,
                             providerId: $providerPrice->id,
-                            type: $type,
+                            key: $key,
                             amount: $providerPrice->unit_amount ?? 0,
                             currency: $providerPrice->currency,
                             recurring: $providerPrice->recurring ? $this->cleanRecurringData($providerPrice->recurring) : null,
@@ -50,7 +53,14 @@ class PersistPricesStage extends AbstractPersistStage
         }
     }
 
-    protected function determineType(object $price, int $index): string
+    protected function determineUniqueKey(int $productId, object $price, int $index): string
+    {
+        $baseKey = $this->determineBaseKey($price, $index);
+
+        return $this->makeKeyUnique($productId, $baseKey);
+    }
+
+    protected function determineBaseKey(object $price, int $index): string
     {
         if ($price->nickname) {
             return Str::snake($price->nickname);
@@ -61,6 +71,23 @@ class PersistPricesStage extends AbstractPersistStage
         }
 
         return $index === 0 ? 'default' : 'variant_'.$index;
+    }
+
+    protected function makeKeyUnique(int $productId, string $key): string
+    {
+        if (! isset($this->usedKeys[$productId])) {
+            $this->usedKeys[$productId] = [];
+        }
+
+        if (! isset($this->usedKeys[$productId][$key])) {
+            $this->usedKeys[$productId][$key] = 1;
+
+            return $key;
+        }
+
+        $count = ++$this->usedKeys[$productId][$key];
+
+        return $key.'_'.$count;
     }
 
     /**

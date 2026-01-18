@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('billing_prices', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_id')->constrained('billing_products')->onDelete('cascade');
-            $table->string('type');
+            $table->string('key');
             $table->string('provider_id')->unique();
             $table->integer('amount');
             $table->string('currency', 3);
@@ -23,7 +23,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index('active');
-            $table->index(['product_id', 'type', 'active']);
+            $table->index(['product_id', 'key', 'active']);
         });
     }
 

@@ -13,7 +13,7 @@ class UpsertPriceAction
     public function handle(
         int $productId,
         string $providerId,
-        string $type,
+        string $key,
         int $amount,
         string $currency,
         ?array $recurring,
@@ -28,7 +28,7 @@ class UpsertPriceAction
         if ($existing) {
             $existing->update([
                 'product_id' => $productId,
-                'type' => $type,
+                'key' => $key,
                 'amount' => $amount,
                 'currency' => $currency,
                 'recurring' => $recurring,
@@ -46,7 +46,7 @@ class UpsertPriceAction
         $price = BillingPrice::create([
             'product_id' => $productId,
             'provider_id' => $providerId,
-            'type' => $type,
+            'key' => $key,
             'amount' => $amount,
             'currency' => $currency,
             'recurring' => $recurring,

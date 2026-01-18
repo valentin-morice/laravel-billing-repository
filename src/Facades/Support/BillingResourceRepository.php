@@ -36,17 +36,17 @@ class BillingResourceRepository
      * @throws ProductNotFoundException
      * @throws PriceNotFoundException
      */
-    public function price(string $productKey, string $priceType): BillingPrice
+    public function price(string $productKey, string $priceKey): BillingPrice
     {
         $product = $this->findActiveProduct($productKey, withPrices: true);
 
         $price = BillingPrice::active()
             ->where('product_id', $product->id)
-            ->where('type', $priceType)
+            ->where('key', $priceKey)
             ->first();
 
         if (! $price) {
-            throw PriceNotFoundException::forProductAndType($productKey, $priceType);
+            throw PriceNotFoundException::forProductAndKey($productKey, $priceKey);
         }
 
         return $price;

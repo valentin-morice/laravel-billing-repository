@@ -15,7 +15,7 @@ it('facade priceId method works', function () {
 
     BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'default',
+        'key' => 'default',
         'provider_id' => 'price_456',
         'amount' => 12000,
         'currency' => 'eur',
@@ -50,7 +50,7 @@ it('facade prices method works', function () {
 
     BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'default',
+        'key' => 'default',
         'provider_id' => 'price_1',
         'amount' => 12000,
         'currency' => 'eur',
@@ -59,7 +59,7 @@ it('facade prices method works', function () {
 
     BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'monthly',
+        'key' => 'monthly',
         'provider_id' => 'price_2',
         'amount' => 2000,
         'currency' => 'eur',
@@ -69,7 +69,7 @@ it('facade prices method works', function () {
     $prices = BillingRepository::resource()->prices('nif');
 
     expect($prices)->toHaveCount(2)
-        ->and($prices->pluck('type')->all())->toBe(['default', 'monthly']);
+        ->and($prices->pluck('key')->all())->toBe(['default', 'monthly']);
 });
 
 it('facade product method works', function () {
@@ -82,7 +82,7 @@ it('facade product method works', function () {
 
     BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'default',
+        'key' => 'default',
         'provider_id' => 'price_456',
         'amount' => 12000,
         'currency' => 'eur',

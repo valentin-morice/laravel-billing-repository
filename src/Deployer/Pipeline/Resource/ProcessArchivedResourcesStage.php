@@ -27,10 +27,10 @@ class ProcessArchivedResourcesStage extends AbstractProcessStage
                 continue;
             }
 
-            $configuredPriceTypes = array_keys($productChange->definition->prices);
+            $configuredPriceKeys = array_keys($productChange->definition->prices);
             $result = $this->priceService->archiveRemoved(
                 $productChange->resultProduct,
-                $configuredPriceTypes
+                $configuredPriceKeys
             );
 
             // Update existing price changes with archived status and add new ones
@@ -38,7 +38,7 @@ class ProcessArchivedResourcesStage extends AbstractProcessStage
                 // Check if this price is already in the changes (from detection)
                 $existingChange = $context->priceChanges->first(function ($change) use ($price, $productChange) {
                     return $change->productKey === $productChange->productKey
-                        && $change->priceType === $price->type
+                        && $change->priceKey === $price->key
                         && $change->type === ChangeTypeEnum::Archived;
                 });
 
@@ -59,7 +59,7 @@ class ProcessArchivedResourcesStage extends AbstractProcessStage
                     // Add new archived price change
                     $context->addPriceChange(new PriceChange(
                         productKey: $productChange->productKey,
-                        priceType: $price->type,
+                        priceKey: $price->key,
                         type: ChangeTypeEnum::Archived,
                         definition: null,
                         existingPrice: $price,

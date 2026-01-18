@@ -6,8 +6,8 @@ use ValentinMorice\LaravelBillingRepository\Exceptions\BillingException;
 
 class PriceNotFoundException extends BillingException
 {
-    public static function forProductAndType(string $productKey, string $priceType): self
+    public static function forProductAndKey(string $productKey, string $priceKey): self
     {
-        return new self("Price '{$priceType}' not found for product '{$productKey}'");
+        return new self("Price '{$priceKey}' not found for product '{$productKey}'");
     }
 }

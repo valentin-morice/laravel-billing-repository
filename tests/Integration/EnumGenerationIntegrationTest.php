@@ -31,7 +31,7 @@ it('can use BillingRepository facade with manually created data', function () {
 
     BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'default',
+        'key' => 'default',
         'provider_id' => 'price_456',
         'amount' => 12000,
         'currency' => 'eur',
@@ -49,7 +49,7 @@ it('can use BillingRepository facade with manually created data', function () {
         ->and($retrievedProduct)->toBeInstanceOf(BillingProduct::class)
         ->and($retrievedProduct->key)->toBe('nif')
         ->and($prices)->toHaveCount(1)
-        ->and($prices->first()->type)->toBe('default');
+        ->and($prices->first()->key)->toBe('default');
 });
 
 it('dry-run does not call constant generator', function () {

@@ -17,6 +17,8 @@ use ValentinMorice\LaravelBillingRepository\Contracts\ProviderClientInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\ProviderFeatureExtractorInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\Services\PriceServiceInterface;
 use ValentinMorice\LaravelBillingRepository\Contracts\Services\ProductServiceInterface;
+use ValentinMorice\LaravelBillingRepository\Data\Enum\Stripe\ImmutablePriceFields;
+use ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\Price\DetectPriceChangesStage;
 use ValentinMorice\LaravelBillingRepository\Exceptions\IO\ConfigurationException;
 use ValentinMorice\LaravelBillingRepository\Stripe\Services\PriceService as StripePriceService;
 use ValentinMorice\LaravelBillingRepository\Stripe\Services\ProductService as StripeProductService;
@@ -25,6 +27,15 @@ use ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor;
 
 class LaravelBillingRepositoryServiceProvider extends PackageServiceProvider implements DeferrableProvider
 {
+    /**
+     * Immutable fields class map by provider
+     *
+     * @var array<string, class-string>
+     */
+    private const IMMUTABLE_FIELDS_MAP = [
+        'stripe' => ImmutablePriceFields::class,
+    ];
+
     /**
      * @throws InvalidPackage
      */
@@ -52,12 +63,36 @@ class LaravelBillingRepositoryServiceProvider extends PackageServiceProvider imp
             'stripe' => fn ($app) => $app->make(StripePriceService::class),
         ]);
 
+        // Bind immutable fields class based on provider for classes that need it
+        $this->registerImmutableFieldsBinding(DetectPriceChangesStage::class);
+        $this->registerImmutableFieldsBinding(StripePriceService::class);
+
         $this->app->singleton(Parser::class, function () {
             return (new ParserFactory)->createForNewestSupportedVersion();
         });
 
         $this->app->singleton(BuilderFactory::class);
         $this->app->singleton(NodeFinder::class);
+    }
+
+    /**
+     * Register immutable fields class binding for a specific class
+     *
+     * @param  class-string  $targetClass
+     */
+    private function registerImmutableFieldsBinding(string $targetClass): void
+    {
+        $this->app->when($targetClass)
+            ->needs('$immutableFieldsClass')
+            ->give(function () {
+                $provider = config('billing.provider', 'stripe');
+
+                if (! isset(self::IMMUTABLE_FIELDS_MAP[$provider])) {
+                    throw ConfigurationException::unknownProvider($provider, array_keys(self::IMMUTABLE_FIELDS_MAP));
+                }
+
+                return self::IMMUTABLE_FIELDS_MAP[$provider];
+            });
     }
 
     /**

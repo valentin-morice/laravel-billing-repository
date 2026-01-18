@@ -15,6 +15,7 @@ readonly class PriceSyncResult
         public BillingPrice $price,
         public ?BillingPrice $oldPrice = null,
         public array $changes = [],
+        public bool $wasDuplicated = false,
     ) {}
 
     /**
@@ -42,6 +43,27 @@ readonly class PriceSyncResult
             $newPrice,
             $oldPrice,
             $changes
+        );
+    }
+
+    /**
+     * Factory for duplicated price (kept old price active, created new with different key)
+     *
+     * @param  BillingPrice  $newPrice  The newly created price with different key
+     * @param  BillingPrice  $keptPrice  The original price that was kept active
+     * @param  array<string, array{old: mixed, new: mixed}>  $changes
+     */
+    public static function duplicated(
+        BillingPrice $newPrice,
+        BillingPrice $keptPrice,
+        array $changes
+    ): self {
+        return new self(
+            ChangeTypeEnum::Created,
+            $newPrice,
+            $keptPrice,
+            $changes,
+            wasDuplicated: true
         );
     }
 
@@ -75,6 +97,14 @@ readonly class PriceSyncResult
     public function wasUnchanged(): bool
     {
         return $this->action === ChangeTypeEnum::Unchanged;
+    }
+
+    /**
+     * Check if the price was duplicated (kept old, created new)
+     */
+    public function wasDuplicated(): bool
+    {
+        return $this->wasDuplicated;
     }
 
     /**

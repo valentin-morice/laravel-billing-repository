@@ -4,6 +4,7 @@ namespace ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\Price;
 
 use ValentinMorice\LaravelBillingRepository\Contracts\Services\PriceServiceInterface;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\DeployContext;
+use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\PriceChange;
 use ValentinMorice\LaravelBillingRepository\Data\Enum\ChangeTypeEnum;
 use ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\Abstract\AbstractProcessStage;
 
@@ -19,7 +20,7 @@ class ProcessPriceChangesStage extends AbstractProcessStage
     protected function process(DeployContext $context): void
     {
         // Process each price change by executing the sync or archive
-        $context->priceChanges = $context->priceChanges->map(function ($change) use ($context) {
+        $context->priceChanges = $context->priceChanges->map(function (PriceChange $change) use ($context) {
             // Skip archived prices for now - they'll be handled in ProcessArchivedResourcesStage
             if ($change->type === ChangeTypeEnum::Archived) {
                 return $change;
@@ -34,8 +35,10 @@ class ProcessPriceChangesStage extends AbstractProcessStage
 
             $result = $this->priceService->sync(
                 $productChange->resultProduct,
-                $change->priceType,
-                $change->definition
+                $change->priceKey,
+                $change->definition,
+                $change->strategy,
+                $change->newPriceKey
             );
 
             // Update the change DTO with execution results

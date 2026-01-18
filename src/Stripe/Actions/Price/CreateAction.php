@@ -20,9 +20,9 @@ class CreateAction
     /**
      * @throws Throwable
      */
-    public function handle(BillingProduct $product, string $priceType, PriceDefinition $definition): BillingPrice
+    public function handle(BillingProduct $product, string $priceKey, PriceDefinition $definition): BillingPrice
     {
-        return DB::transaction(function () use ($product, $priceType, $definition) {
+        return DB::transaction(function () use ($product, $priceKey, $definition) {
             $stripePriceId = $this->client->price()->create(
                 $product->provider_id,
                 $definition->amount,
@@ -38,7 +38,7 @@ class CreateAction
             try {
                 $price = BillingPrice::create([
                     'product_id' => $product->id,
-                    'type' => $priceType,
+                    'key' => $priceKey,
                     'provider_id' => $stripePriceId,
                     'amount' => $definition->amount,
                     'currency' => $definition->currency,

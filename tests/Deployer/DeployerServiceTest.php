@@ -38,7 +38,7 @@ it('orchestrates product and price creation end-to-end', function () {
 
     $detectChanges = new DetectChangesAction;
     $productService = new ProductService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
-    $priceService = new PriceService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
+    $priceService = new PriceService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor, \ValentinMorice\LaravelBillingRepository\Data\Enum\Stripe\ImmutablePriceFields::class);
 
     // Bind services to container
     app()->instance(ProductServiceInterface::class, $productService);
@@ -93,7 +93,7 @@ it('iterates through multiple products and prices correctly', function () {
 
     $detectChanges = new DetectChangesAction;
     $productService = new ProductService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
-    $priceService = new PriceService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
+    $priceService = new PriceService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor, \ValentinMorice\LaravelBillingRepository\Data\Enum\Stripe\ImmutablePriceFields::class);
 
     // Bind services to container
     app()->instance(ProductServiceInterface::class, $productService);
@@ -160,7 +160,7 @@ it('handles empty configuration gracefully', function () {
 
     $detectChanges = new DetectChangesAction;
     $productService = new ProductService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
-    $priceService = new PriceService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
+    $priceService = new PriceService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor, \ValentinMorice\LaravelBillingRepository\Data\Enum\Stripe\ImmutablePriceFields::class);
 
     // Bind services to container
     app()->instance(ProductServiceInterface::class, $productService);
@@ -198,7 +198,7 @@ it('archives prices that are removed from config', function () {
 
     BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'monthly',
+        'key' => 'monthly',
         'provider_id' => 'price_monthly',
         'amount' => 1000,
         'currency' => 'eur',
@@ -208,7 +208,7 @@ it('archives prices that are removed from config', function () {
 
     BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'yearly',
+        'key' => 'yearly',
         'provider_id' => 'price_yearly',
         'amount' => 10000,
         'currency' => 'eur',
@@ -225,7 +225,7 @@ it('archives prices that are removed from config', function () {
 
     $detectChanges = new DetectChangesAction;
     $productService = new ProductService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
-    $priceService = new PriceService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
+    $priceService = new PriceService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor, \ValentinMorice\LaravelBillingRepository\Data\Enum\Stripe\ImmutablePriceFields::class);
 
     // Bind services to container
     app()->instance(ProductServiceInterface::class, $productService);
@@ -296,7 +296,7 @@ it('archives products that are removed from config', function () {
 
     $detectChanges = new DetectChangesAction;
     $productService = new ProductService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
-    $priceService = new PriceService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor);
+    $priceService = new PriceService($client, $detectChanges, new \ValentinMorice\LaravelBillingRepository\Stripe\StripeFeatureExtractor, \ValentinMorice\LaravelBillingRepository\Data\Enum\Stripe\ImmutablePriceFields::class);
 
     // Bind services to container
     app()->instance(ProductServiceInterface::class, $productService);

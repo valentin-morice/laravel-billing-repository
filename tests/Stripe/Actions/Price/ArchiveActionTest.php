@@ -25,7 +25,7 @@ it('archives price and stores in database', function () {
 
     $price = BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'default',
+        'key' => 'default',
         'provider_id' => 'price_456',
         'amount' => 1000,
         'currency' => 'eur',
@@ -60,7 +60,7 @@ it('preserves other price attributes when archiving', function () {
 
     $price = BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'monthly',
+        'key' => 'monthly',
         'provider_id' => 'price_monthly',
         'amount' => 999,
         'currency' => 'usd',
@@ -81,7 +81,7 @@ it('preserves other price attributes when archiving', function () {
     $action = new ArchiveAction($client);
     $result = $action->handle($price);
 
-    expect($result->type)->toBe('monthly')
+    expect($result->key)->toBe('monthly')
         ->and($result->amount)->toBe(999)
         ->and($result->currency)->toBe('usd')
         ->and($result->recurring)->toBe(['interval' => 'month'])
@@ -99,7 +99,7 @@ it('archives recurring price correctly', function () {
 
     $price = BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'yearly',
+        'key' => 'yearly',
         'provider_id' => 'price_yearly',
         'amount' => 10000,
         'currency' => 'eur',
@@ -133,7 +133,7 @@ it('archives price with nickname correctly', function () {
 
     $price = BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'default',
+        'key' => 'default',
         'provider_id' => 'price_456',
         'amount' => 1000,
         'currency' => 'eur',
@@ -167,7 +167,7 @@ it('throws exception when provider API fails', function () {
 
     $price = BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'default',
+        'key' => 'default',
         'provider_id' => 'price_456',
         'amount' => 1000,
         'currency' => 'eur',

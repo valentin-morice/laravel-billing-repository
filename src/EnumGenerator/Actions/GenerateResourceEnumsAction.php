@@ -23,9 +23,9 @@ class GenerateResourceEnumsAction
                 ->pluck('key')
                 ->all(),
             ModelType::Price => BillingPrice::where('active', true)
-                ->distinct('type')
-                ->orderBy('type')
-                ->pluck('type')
+                ->distinct('key')
+                ->orderBy('key')
+                ->pluck('key')
                 ->all(),
         };
 

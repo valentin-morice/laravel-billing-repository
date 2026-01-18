@@ -39,7 +39,7 @@ it('displays summary for created items only', function () {
 
     $priceChange = new PriceChange(
         productKey: 'test',
-        priceType: 'monthly',
+        priceKey: 'monthly',
         type: ChangeTypeEnum::Created,
         definition: null,
         existingPrice: null,
@@ -82,7 +82,7 @@ it('displays summary for archived items only', function () {
 
     $priceChange = new PriceChange(
         productKey: 'test',
-        priceType: 'monthly',
+        priceKey: 'monthly',
         type: ChangeTypeEnum::Archived,
         definition: null,
         existingPrice: null,

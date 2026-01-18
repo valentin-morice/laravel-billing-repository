@@ -63,14 +63,14 @@ class BillingConfigRepository
      * @throws ProductNotFoundException
      * @throws PriceNotFoundException
      */
-    public function price(string $productKey, string $priceType): PriceDefinition
+    public function price(string $productKey, string $priceKey): PriceDefinition
     {
         $product = $this->product($productKey);
 
-        if (! isset($product->prices[$priceType])) {
-            throw PriceNotFoundException::forProductAndType($productKey, $priceType);
+        if (! isset($product->prices[$priceKey])) {
+            throw PriceNotFoundException::forProductAndKey($productKey, $priceKey);
         }
 
-        return $product->prices[$priceType];
+        return $product->prices[$priceKey];
     }
 }

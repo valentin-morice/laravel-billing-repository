@@ -3,6 +3,7 @@
 namespace ValentinMorice\LaravelBillingRepository\Deployer\Pipeline\Price;
 
 use Illuminate\Database\Eloquent\Collection;
+use ValentinMorice\LaravelBillingRepository\Contracts\ImmutableFieldsInterface;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\DeployContext;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\PriceChange;
 use ValentinMorice\LaravelBillingRepository\Data\Enum\ChangeTypeEnum;
@@ -13,9 +14,13 @@ use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
 
 class DetectPriceChangesStage extends AbstractDetectStage
 {
+    /**
+     * @param  class-string<ImmutableFieldsInterface>  $immutableFieldsClass
+     */
     public function __construct(
         DetectChangesAction $detectChanges,
         protected CreatePriceComparisonObjectAction $createComparisonObject,
+        protected string $immutableFieldsClass,
     ) {
         parent::__construct($detectChanges);
     }
@@ -36,9 +41,9 @@ class DetectPriceChangesStage extends AbstractDetectStage
             }
 
             // Analyze each price in the product definition
-            foreach ($definition->prices as $priceType => $priceDefinition) {
+            foreach ($definition->prices as $priceKey => $priceDefinition) {
                 /** @var BillingPrice|null $existingPrice */
-                $existingPrice = $existingProduct?->prices->firstWhere('type', $priceType);
+                $existingPrice = $existingProduct?->prices->firstWhere('key', $priceKey);
 
                 if ($existingPrice) {
                     $existingForComparison = $this->createComparisonObject->handle($existingPrice);
@@ -50,40 +55,46 @@ class DetectPriceChangesStage extends AbstractDetectStage
                     );
 
                     $type = empty($changes) ? ChangeTypeEnum::Unchanged : ChangeTypeEnum::Updated;
+                    $immutableChanges = $this->immutableFieldsClass::filterImmutable($changes);
+                    $hasImmutableChanges = ! empty($immutableChanges);
 
                     $context->addPriceChange(new PriceChange(
                         productKey: $productKey,
-                        priceType: $priceType,
+                        priceKey: $priceKey,
                         type: $type,
                         definition: $priceDefinition,
                         existingPrice: $existingPrice,
                         resultPrice: null,
                         changes: $changes,
+                        hasImmutableChanges: $hasImmutableChanges,
+                        immutableFieldsClass: $this->immutableFieldsClass,
                     ));
                 } else {
                     $context->addPriceChange(new PriceChange(
                         productKey: $productKey,
-                        priceType: $priceType,
+                        priceKey: $priceKey,
                         type: ChangeTypeEnum::Created,
                         definition: $priceDefinition,
                         existingPrice: null,
                         resultPrice: null,
                         changes: [],
+                        hasImmutableChanges: false,
+                        immutableFieldsClass: $this->immutableFieldsClass,
                     ));
                 }
             }
 
             // Detect prices to be archived (exist in DB but not in config)
             if ($existingProduct) {
-                $configuredPriceTypes = array_keys($definition->prices);
+                $configuredPriceKeys = array_keys($definition->prices);
                 /** @var Collection<int, BillingPrice> $removedPrices */
-                $removedPrices = $existingProduct->prices->whereNotIn('type', $configuredPriceTypes);
+                $removedPrices = $existingProduct->prices->whereNotIn('key', $configuredPriceKeys);
 
                 /** @var BillingPrice $price */
                 foreach ($removedPrices as $price) {
                     $context->addPriceChange(new PriceChange(
                         productKey: $productKey,
-                        priceType: $price->type,
+                        priceKey: $price->key,
                         type: ChangeTypeEnum::Archived,
                         definition: null,
                         existingPrice: $price,

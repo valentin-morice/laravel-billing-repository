@@ -6,7 +6,9 @@ use ValentinMorice\LaravelBillingRepository\EnumGenerator\Actions\GenerateEnumFi
 beforeEach(function () {
     $this->tempDir = sys_get_temp_dir().'/billing-test-'.uniqid();
     mkdir($this->tempDir, 0755, true);
-    mkdir("{$this->tempDir}/Data/Enum/Consumer", 0755, true);
+
+    config(['billing.enums.path' => $this->tempDir]);
+    config(['billing.enums.namespace' => 'App\\Enums\\Billing']);
 });
 
 afterEach(function () {
@@ -28,11 +30,12 @@ it('generates product key enum file', function () {
 
     expect($result)->toBeTrue();
 
-    $filePath = dirname(__DIR__, 3).'/src/Data/Enum/Consumer/ProductKey.php';
+    $filePath = $this->tempDir.'/ProductKey.php';
     expect(file_exists($filePath))->toBeTrue();
 
     $content = file_get_contents($filePath);
     expect($content)
+        ->toContain('namespace App\\Enums\\Billing;')
         ->toContain('enum ProductKey: string')
         ->toContain("case NIF = 'nif';")
         ->toContain("case PREMIUM = 'premium';");
@@ -44,11 +47,12 @@ it('generates price key enum file', function () {
 
     expect($result)->toBeTrue();
 
-    $filePath = dirname(__DIR__, 3).'/src/Data/Enum/Consumer/PriceKey.php';
+    $filePath = $this->tempDir.'/PriceKey.php';
     expect(file_exists($filePath))->toBeTrue();
 
     $content = file_get_contents($filePath);
     expect($content)
+        ->toContain('namespace App\\Enums\\Billing;')
         ->toContain('enum PriceKey: string')
         ->toContain("case MONTHLY = 'monthly';")
         ->toContain("case YEARLY = 'yearly';");
@@ -65,7 +69,7 @@ it('overwrites existing enum file', function () {
 
     expect($result)->toBeTrue();
 
-    $filePath = dirname(__DIR__, 3).'/src/Data/Enum/Consumer/ProductKey.php';
+    $filePath = $this->tempDir.'/ProductKey.php';
     $content = file_get_contents($filePath);
 
     expect($content)
@@ -79,7 +83,7 @@ it('handles empty cases array', function () {
 
     expect($result)->toBeTrue();
 
-    $filePath = dirname(__DIR__, 3).'/src/Data/Enum/Consumer/ProductKey.php';
+    $filePath = $this->tempDir.'/ProductKey.php';
     expect(file_exists($filePath))->toBeTrue();
 
     $content = file_get_contents($filePath);

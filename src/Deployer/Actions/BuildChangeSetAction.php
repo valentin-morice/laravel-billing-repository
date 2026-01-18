@@ -42,4 +42,30 @@ class BuildChangeSetAction
 
         return $result->toChangeSet();
     }
+
+    /**
+     * Deploy using a pre-analyzed ChangeSet with resolved strategies
+     *
+     * This skips detection stages since we already have the detected changes
+     * with user-resolved strategies for immutable field changes.
+     */
+    public function handleWithStrategies(ChangeSet $changeSet): ChangeSet
+    {
+        $context = DeployContext::createFromChangeSet($changeSet);
+
+        /** @var DeployContext $result */
+        $result = $this->pipeline
+            ->send($context)
+            ->through([
+                // Skip detection stages - changes already detected with strategies
+                ProcessProductChangesStage::class,
+                ProcessPriceChangesStage::class,
+                DetectArchivedResourcesStage::class,
+                ProcessArchivedResourcesStage::class,
+                GenerateEnumsStage::class,
+            ])
+            ->thenReturn();
+
+        return $result->toChangeSet();
+    }
 }

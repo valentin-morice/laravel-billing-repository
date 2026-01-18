@@ -103,7 +103,7 @@ it('formats created price message', function () {
 
     $change = new PriceChange(
         productKey: 'premium-plan',
-        priceType: 'monthly',
+        priceKey: 'monthly',
         type: ChangeTypeEnum::Created,
         definition: null,
         existingPrice: null,
@@ -125,7 +125,7 @@ it('formats updated price message', function () {
 
     $change = new PriceChange(
         productKey: 'basic-plan',
-        priceType: 'yearly',
+        priceKey: 'yearly',
         type: ChangeTypeEnum::Updated,
         definition: null,
         existingPrice: null,
@@ -147,7 +147,7 @@ it('formats archived price message', function () {
 
     $change = new PriceChange(
         productKey: 'legacy-plan',
-        priceType: 'monthly',
+        priceKey: 'monthly',
         type: ChangeTypeEnum::Archived,
         definition: null,
         existingPrice: null,
@@ -167,7 +167,7 @@ it('formats price message without provider id when null', function () {
 
     $change = new PriceChange(
         productKey: 'test-plan',
-        priceType: 'monthly',
+        priceKey: 'monthly',
         type: ChangeTypeEnum::Created,
         definition: null,
         existingPrice: null,

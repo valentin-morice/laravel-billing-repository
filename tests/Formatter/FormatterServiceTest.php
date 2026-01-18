@@ -7,6 +7,7 @@ use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\ProductChange;
 use ValentinMorice\LaravelBillingRepository\Data\Enum\ChangeTypeEnum;
 use ValentinMorice\LaravelBillingRepository\Formatter\Actions\FormatAnalysisAction;
 use ValentinMorice\LaravelBillingRepository\Formatter\Actions\FormatDeploymentProgressAction;
+use ValentinMorice\LaravelBillingRepository\Formatter\Actions\FormatRequiredConfigChangesAction;
 use ValentinMorice\LaravelBillingRepository\Formatter\Actions\FormatSummaryAction;
 use ValentinMorice\LaravelBillingRepository\Formatter\FormatterService;
 
@@ -18,8 +19,9 @@ it('delegates formatAnalysis to FormatAnalysisAction', function () {
     $formatAnalysis = m::mock(FormatAnalysisAction::class);
     $formatDeploymentProgress = m::mock(FormatDeploymentProgressAction::class);
     $formatSummary = m::mock(FormatSummaryAction::class);
+    $formatRequiredConfigChanges = m::mock(FormatRequiredConfigChangesAction::class);
 
-    $service = new FormatterService($formatAnalysis, $formatDeploymentProgress, $formatSummary);
+    $service = new FormatterService($formatAnalysis, $formatDeploymentProgress, $formatSummary, $formatRequiredConfigChanges);
     $command = m::mock(Command::class);
     $changeSet = new ChangeSet([], []);
 
@@ -34,8 +36,9 @@ it('delegates formatDeploymentProgress to FormatDeploymentProgressAction', funct
     $formatAnalysis = m::mock(FormatAnalysisAction::class);
     $formatDeploymentProgress = m::mock(FormatDeploymentProgressAction::class);
     $formatSummary = m::mock(FormatSummaryAction::class);
+    $formatRequiredConfigChanges = m::mock(FormatRequiredConfigChangesAction::class);
 
-    $service = new FormatterService($formatAnalysis, $formatDeploymentProgress, $formatSummary);
+    $service = new FormatterService($formatAnalysis, $formatDeploymentProgress, $formatSummary, $formatRequiredConfigChanges);
     $command = m::mock(Command::class);
 
     $change = new ProductChange(
@@ -57,8 +60,9 @@ it('delegates formatSummary to FormatSummaryAction', function () {
     $formatAnalysis = m::mock(FormatAnalysisAction::class);
     $formatDeploymentProgress = m::mock(FormatDeploymentProgressAction::class);
     $formatSummary = m::mock(FormatSummaryAction::class);
+    $formatRequiredConfigChanges = m::mock(FormatRequiredConfigChangesAction::class);
 
-    $service = new FormatterService($formatAnalysis, $formatDeploymentProgress, $formatSummary);
+    $service = new FormatterService($formatAnalysis, $formatDeploymentProgress, $formatSummary, $formatRequiredConfigChanges);
     $command = m::mock(Command::class);
     $changeSet = new ChangeSet([], []);
 
@@ -67,6 +71,23 @@ it('delegates formatSummary to FormatSummaryAction', function () {
         ->with($command, $changeSet);
 
     $service->formatSummary($command, $changeSet);
+});
+
+it('delegates formatRequiredConfigChanges to FormatRequiredConfigChangesAction', function () {
+    $formatAnalysis = m::mock(FormatAnalysisAction::class);
+    $formatDeploymentProgress = m::mock(FormatDeploymentProgressAction::class);
+    $formatSummary = m::mock(FormatSummaryAction::class);
+    $formatRequiredConfigChanges = m::mock(FormatRequiredConfigChangesAction::class);
+
+    $service = new FormatterService($formatAnalysis, $formatDeploymentProgress, $formatSummary, $formatRequiredConfigChanges);
+    $command = m::mock(Command::class);
+    $changeSet = new ChangeSet([], []);
+
+    $formatRequiredConfigChanges->shouldReceive('handle')
+        ->once()
+        ->with($command, $changeSet);
+
+    $service->formatRequiredConfigChanges($command, $changeSet);
 });
 
 it('can be resolved from container with all dependencies', function () {
@@ -87,4 +108,8 @@ it('can be resolved from container with all dependencies', function () {
     $formatSummaryProperty = $reflection->getProperty('formatSummary');
     $formatSummary = $formatSummaryProperty->getValue($service);
     expect($formatSummary)->toBeInstanceOf(FormatSummaryAction::class);
+
+    $formatRequiredConfigChangesProperty = $reflection->getProperty('formatRequiredConfigChanges');
+    $formatRequiredConfigChanges = $formatRequiredConfigChangesProperty->getValue($service);
+    expect($formatRequiredConfigChanges)->toBeInstanceOf(FormatRequiredConfigChangesAction::class);
 });

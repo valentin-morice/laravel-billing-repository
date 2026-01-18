@@ -8,6 +8,7 @@ use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\PriceChange;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\ProductChange;
 use ValentinMorice\LaravelBillingRepository\Formatter\Actions\FormatAnalysisAction;
 use ValentinMorice\LaravelBillingRepository\Formatter\Actions\FormatDeploymentProgressAction;
+use ValentinMorice\LaravelBillingRepository\Formatter\Actions\FormatRequiredConfigChangesAction;
 use ValentinMorice\LaravelBillingRepository\Formatter\Actions\FormatSummaryAction;
 
 class FormatterService
@@ -16,6 +17,7 @@ class FormatterService
         protected FormatAnalysisAction $formatAnalysis,
         protected FormatDeploymentProgressAction $formatDeploymentProgress,
         protected FormatSummaryAction $formatSummary,
+        protected FormatRequiredConfigChangesAction $formatRequiredConfigChanges,
     ) {}
 
     /**
@@ -40,5 +42,13 @@ class FormatterService
     public function formatSummary(Command $command, ChangeSet $changeSet): void
     {
         $this->formatSummary->handle($command, $changeSet);
+    }
+
+    /**
+     * Format and display required config changes for duplicate strategy
+     */
+    public function formatRequiredConfigChanges(Command $command, ChangeSet $changeSet): void
+    {
+        $this->formatRequiredConfigChanges->handle($command, $changeSet);
     }
 }

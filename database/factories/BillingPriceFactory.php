@@ -17,7 +17,7 @@ class BillingPriceFactory extends Factory
     {
         return [
             'product_id' => BillingProduct::factory(),
-            'type' => 'default',
+            'key' => 'default',
             'provider_id' => 'price_'.fake()->unique()->numerify('##########'),
             'amount' => fake()->numberBetween(500, 50000),
             'currency' => 'eur',
@@ -33,7 +33,7 @@ class BillingPriceFactory extends Factory
     public function monthly(): static
     {
         return $this->state(fn (array $attributes) => [
-            'type' => 'monthly',
+            'key' => 'monthly',
             'recurring' => ['interval' => 'month'],
         ]);
     }
@@ -44,7 +44,7 @@ class BillingPriceFactory extends Factory
     public function yearly(): static
     {
         return $this->state(fn (array $attributes) => [
-            'type' => 'yearly',
+            'key' => 'yearly',
             'recurring' => ['interval' => 'year'],
         ]);
     }

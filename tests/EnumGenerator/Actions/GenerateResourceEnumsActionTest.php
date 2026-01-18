@@ -98,7 +98,7 @@ it('generates constants from active price types only', function () {
 
     BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'default',
+        'key' => 'default',
         'provider_id' => 'price_123',
         'amount' => 1000,
         'currency' => 'eur',
@@ -107,7 +107,7 @@ it('generates constants from active price types only', function () {
 
     BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'monthly',
+        'key' => 'monthly',
         'provider_id' => 'price_456',
         'amount' => 2000,
         'currency' => 'eur',
@@ -116,7 +116,7 @@ it('generates constants from active price types only', function () {
 
     BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'archived',
+        'key' => 'archived',
         'provider_id' => 'price_789',
         'amount' => 3000,
         'currency' => 'eur',
@@ -143,7 +143,7 @@ it('returns distinct price types', function () {
     // Create multiple prices with the same type
     BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'monthly',
+        'key' => 'monthly',
         'provider_id' => 'price_123',
         'amount' => 1000,
         'currency' => 'eur',
@@ -152,7 +152,7 @@ it('returns distinct price types', function () {
 
     BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'yearly',
+        'key' => 'yearly',
         'provider_id' => 'price_456',
         'amount' => 2000,
         'currency' => 'usd',
@@ -185,7 +185,7 @@ it('sorts price results consistently by type', function () {
 
     BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'zero',
+        'key' => 'zero',
         'provider_id' => 'price_1',
         'amount' => 0,
         'currency' => 'eur',
@@ -194,7 +194,7 @@ it('sorts price results consistently by type', function () {
 
     BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'annual',
+        'key' => 'annual',
         'provider_id' => 'price_2',
         'amount' => 10000,
         'currency' => 'eur',
@@ -203,7 +203,7 @@ it('sorts price results consistently by type', function () {
 
     BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'monthly',
+        'key' => 'monthly',
         'provider_id' => 'price_3',
         'amount' => 1000,
         'currency' => 'eur',

@@ -39,6 +39,25 @@ class DeployContext
     }
 
     /**
+     * Create a context from a pre-analyzed ChangeSet (with resolved strategies)
+     */
+    public static function createFromChangeSet(ChangeSet $changeSet): self
+    {
+        $productsConfig = config('billing.products', []);
+
+        $definitions = array_map(function ($productData) {
+            return ProductDefinition::fromArray($productData);
+        }, $productsConfig);
+
+        return new self(
+            isDryRun: false,
+            definitions: $definitions,
+            productChanges: collect($changeSet->productChanges),
+            priceChanges: collect($changeSet->priceChanges),
+        );
+    }
+
+    /**
      * Convert the context to a ChangeSet
      */
     public function toChangeSet(): ChangeSet

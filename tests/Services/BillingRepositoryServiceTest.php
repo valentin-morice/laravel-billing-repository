@@ -16,7 +16,7 @@ it('retrieves price ID using product key and price type', function () {
 
     BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'default',
+        'key' => 'default',
         'provider_id' => 'price_456',
         'amount' => 12000,
         'currency' => 'eur',
@@ -51,7 +51,7 @@ it('gets all active prices for a product', function () {
 
     BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'default',
+        'key' => 'default',
         'provider_id' => 'price_1',
         'amount' => 12000,
         'currency' => 'eur',
@@ -60,7 +60,7 @@ it('gets all active prices for a product', function () {
 
     BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'zero',
+        'key' => 'zero',
         'provider_id' => 'price_2',
         'amount' => 0,
         'currency' => 'eur',
@@ -69,7 +69,7 @@ it('gets all active prices for a product', function () {
 
     BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'archived',
+        'key' => 'archived',
         'provider_id' => 'price_3',
         'amount' => 5000,
         'currency' => 'eur',
@@ -79,7 +79,7 @@ it('gets all active prices for a product', function () {
     $prices = BillingRepository::resource()->prices('nif');
 
     expect($prices)->toHaveCount(2)
-        ->and($prices->pluck('type')->toArray())->toBe(['default', 'zero']);
+        ->and($prices->pluck('key')->toArray())->toBe(['default', 'zero']);
 });
 
 it('gets product model with relationships', function () {
@@ -92,7 +92,7 @@ it('gets product model with relationships', function () {
 
     BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'default',
+        'key' => 'default',
         'provider_id' => 'price_456',
         'amount' => 12000,
         'currency' => 'eur',
@@ -128,7 +128,7 @@ it('throws exception for missing price', function () {
 
     BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'default',
+        'key' => 'default',
         'provider_id' => 'price_456',
         'amount' => 12000,
         'currency' => 'eur',
@@ -168,7 +168,7 @@ it('ignores inactive prices', function () {
 
     BillingPrice::create([
         'product_id' => $product->id,
-        'type' => 'inactive_price',
+        'key' => 'inactive_price',
         'provider_id' => 'price_456',
         'amount' => 12000,
         'currency' => 'eur',

@@ -31,6 +31,8 @@ class GenerateEnumFileAction
      */
     private function generateEnumContent(string $enumName, array $cases): string
     {
+        $namespace = config('billing.enums.namespace', 'App\\Enums\\Billing');
+
         $caseLines = '';
         foreach ($cases as $key => $caseName) {
             $caseLines .= "    case {$caseName} = '{$key}';\n";
@@ -39,7 +41,7 @@ class GenerateEnumFileAction
         return <<<PHP
 <?php
 
-namespace ValentinMorice\LaravelBillingRepository\Data\Enum\Consumer;
+namespace {$namespace};
 
 /**
  * Auto-generated enum for billing {$enumName}
@@ -59,9 +61,9 @@ PHP;
      */
     private function getFilePath(string $enumName): string
     {
-        $basePath = dirname(__DIR__, 2);
+        $basePath = config('billing.enums.path', app_path('Enums/Billing'));
 
-        return $basePath.'/Data/Enum/Consumer/'.$enumName.'.php';
+        return $basePath.'/'.$enumName.'.php';
     }
 
     /**

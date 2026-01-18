@@ -101,6 +101,7 @@ class PriceResource implements PriceResourceInterface
             while ($hasMore) {
                 $params = [
                     'product' => $productId,
+                    'active' => true,
                     'limit' => 100,
                 ];
                 if ($startingAfter !== null) {

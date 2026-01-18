@@ -41,7 +41,7 @@ it('creates one-time price and stores in database', function () {
 
     expect($result)->toBeInstanceOf(BillingPrice::class)
         ->and($result->product_id)->toBe($product->id)
-        ->and($result->type)->toBe('default')
+        ->and($result->key)->toBe('default')
         ->and($result->provider_id)->toBe('price_456')
         ->and($result->amount)->toBe(1000)
         ->and($result->currency)->toBe('eur')
@@ -77,7 +77,7 @@ it('creates recurring price with interval', function () {
     $result = $action->handle($product, 'monthly', $definition);
 
     expect($result->recurring)->toBe(['interval' => 'month'])
-        ->and($result->type)->toBe('monthly')
+        ->and($result->key)->toBe('monthly')
         ->and($result->amount)->toBe(999);
 });
 
@@ -159,7 +159,7 @@ it('creates price with all optional fields', function () {
 
     $result = $action->handle($product, 'yearly', $definition);
 
-    expect($result->type)->toBe('yearly')
+    expect($result->key)->toBe('yearly')
         ->and($result->amount)->toBe(1999)
         ->and($result->currency)->toBe('usd')
         ->and($result->recurring)->toBe(['interval' => 'year'])
@@ -188,8 +188,8 @@ it('handles multiple price types for same product', function () {
     $defaultResult = $action->handle($product, 'default', new PriceDefinition(1000));
     $premiumResult = $action->handle($product, 'premium', new PriceDefinition(2000));
 
-    expect($defaultResult->type)->toBe('default')
-        ->and($premiumResult->type)->toBe('premium')
+    expect($defaultResult->key)->toBe('default')
+        ->and($premiumResult->key)->toBe('premium')
         ->and(BillingPrice::count())->toBe(2);
 });
 
@@ -228,7 +228,7 @@ it('returns existing price when duplicate provider_id is detected', function () 
 
     // Create existing price in database
     $existingPrice = BillingPrice::factory()->forProduct($product)->create([
-        'type' => 'monthly',
+        'key' => 'monthly',
         'provider_id' => 'price_duplicate',
         'amount' => 1000,
     ]);

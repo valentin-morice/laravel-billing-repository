@@ -33,7 +33,7 @@ class BillingRepository
      * @throws ProductNotFoundException
      * @throws PriceNotFoundException
      */
-    public static function priceId(string|ProductKey $productKey, string|PriceKey $priceType): string
+    public static function priceId(string|ProductKey $productKey, string|PriceKey $priceKey): string
     {
         $product = BillingProduct::active()
             ->where('key', $productKey)
@@ -45,11 +45,11 @@ class BillingRepository
 
         $price = BillingPrice::active()
             ->where('product_id', $product->id)
-            ->where('type', $priceType)
+            ->where('key', $priceKey)
             ->first();
 
         if (! $price) {
-            throw PriceNotFoundException::forProductAndType($productKey, $priceType);
+            throw PriceNotFoundException::forProductAndKey($productKey, $priceKey);
         }
 
         return $price->provider_id;

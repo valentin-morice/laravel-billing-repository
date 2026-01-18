@@ -51,18 +51,18 @@ class FormatAnalysisAction
         $command->line('<fg=green>Prices:</>');
         foreach ($changeSet->priceChanges as $change) {
             $symbol = $change->type->getSymbol();
-            $fullType = "{$change->productKey}.{$change->priceType}";
+            $fullKey = "{$change->productKey}.{$change->priceKey}";
 
             if ($change->definition) {
                 $formattedPrice = $this->formatCurrency($change->definition->amount, $change->definition->currency);
                 $recurring = $this->formatRecurring($change->definition->recurring);
-                $command->line("  {$symbol} {$fullType} ({$formattedPrice}{$recurring})");
+                $command->line("  {$symbol} {$fullKey} ({$formattedPrice}{$recurring})");
             } elseif ($change->existingPrice) {
                 $formattedPrice = $this->formatCurrency($change->existingPrice->amount, $change->existingPrice->currency);
                 $recurring = $this->formatRecurring($change->existingPrice->recurring);
-                $command->line("  {$symbol} {$fullType} ({$formattedPrice}{$recurring})");
+                $command->line("  {$symbol} {$fullKey} ({$formattedPrice}{$recurring})");
             } else {
-                $command->line("  {$symbol} {$fullType}");
+                $command->line("  {$symbol} {$fullKey}");
             }
 
             // Show diffs for updates

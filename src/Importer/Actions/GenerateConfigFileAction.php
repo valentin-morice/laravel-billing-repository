@@ -5,15 +5,17 @@ namespace ValentinMorice\LaravelBillingRepository\Importer\Actions;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Facades\File;
 use PhpParser\Error;
+use PhpParser\Lexer;
 use PhpParser\Node\ArrayItem;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\NodeFinder;
+use PhpParser\NodeTraverser;
+use PhpParser\NodeVisitor\CloningVisitor;
 use PhpParser\Parser;
 use PhpParser\ParserFactory;
-use PhpParser\PrettyPrinter\Standard;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Importer\ImportContext;
 use ValentinMorice\LaravelBillingRepository\Exceptions\IO\ConfigurationException;
 use ValentinMorice\LaravelBillingRepository\Exceptions\IO\FileParsingException;
@@ -22,14 +24,21 @@ use ValentinMorice\LaravelBillingRepository\Models\BillingPrice;
 
 class GenerateConfigFileAction
 {
+    private ConfigFilePrinter $printer;
+
+    private Lexer $lexer;
+
+    private NodeTraverser $traverser;
+
     public function __construct(
         protected ?Parser $parser = null,
         protected ?NodeFinder $nodeFinder = null,
-        protected ?Standard $printer = null,
     ) {
+        $this->lexer = new Lexer;
         $this->parser = $parser ?? (new ParserFactory)->createForNewestSupportedVersion();
         $this->nodeFinder = $nodeFinder ?? new NodeFinder;
-        $this->printer = $printer ?? new ConfigFilePrinter;
+        $this->printer = new ConfigFilePrinter;
+        $this->traverser = new NodeTraverser(new CloningVisitor);
     }
 
     /**
@@ -43,29 +52,41 @@ class GenerateConfigFileAction
             throw ConfigurationException::configFileNotFound();
         }
 
-        $ast = $this->parseConfigFile($configPath);
-        $returnStmt = $this->findReturnStatement($ast);
+        $originalCode = File::get($configPath);
+        $parseResult = $this->parseConfigFile($configPath, $originalCode);
+
+        $oldAst = $parseResult['ast'];
+        $oldTokens = $parseResult['tokens'];
+
+        // Clone the AST for modification (required for format-preserving printing)
+        $newAst = $this->traverser->traverse($oldAst);
+
+        $returnStmt = $this->findReturnStatement($newAst);
         $productsArrayItem = $this->findProductsArrayItem($returnStmt);
         $newProductsArray = $this->buildProductsArray($context);
         $productsArrayItem->value = $newProductsArray;
 
-        File::put($configPath, $this->printer->prettyPrintFile($ast));
+        $newCode = $this->printer->printFormatPreserving($newAst, $oldAst, $oldTokens);
+
+        File::put($configPath, $newCode);
     }
 
     /**
-     * Parse config file to AST
+     * Parse config file to AST with tokens for format-preserving printing
+     *
+     * @return array{ast: array, tokens: array}
      */
-    private function parseConfigFile(string $configPath): array
+    private function parseConfigFile(string $configPath, string $content): array
     {
         try {
-            $content = File::get($configPath);
             $ast = $this->parser->parse($content);
+            $tokens = $this->parser->getTokens();
 
             if ($ast === null) {
                 throw FileParsingException::failedToParse($configPath);
             }
 
-            return $ast;
+            return ['ast' => $ast, 'tokens' => $tokens];
         } catch (Error $e) {
             throw FileParsingException::parseError($configPath, $e);
         } catch (FileNotFoundException $e) {
@@ -193,7 +214,7 @@ class GenerateConfigFileAction
         foreach ($prices as $price) {
             $priceItems[] = new ArrayItem(
                 $this->buildPriceDefinition($price),
-                new String_($price->type)
+                new String_($price->key)
             );
         }
 

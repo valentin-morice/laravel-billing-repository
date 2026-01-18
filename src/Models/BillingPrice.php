@@ -12,7 +12,7 @@ use ValentinMorice\LaravelBillingRepository\Stripe\Models\StripePriceFeatures;
 /**
  * @property int $id
  * @property int $product_id
- * @property string $type
+ * @property string $key
  * @property string $provider_id
  * @property int $amount
  * @property string $currency
@@ -29,7 +29,7 @@ class BillingPrice extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['product_id', 'type', 'provider_id', 'amount', 'currency', 'recurring', 'nickname', 'metadata', 'trial_period_days', 'active'];
+    protected $fillable = ['product_id', 'key', 'provider_id', 'amount', 'currency', 'recurring', 'nickname', 'metadata', 'trial_period_days', 'active'];
 
     protected function casts(): array
     {

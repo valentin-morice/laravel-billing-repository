@@ -172,7 +172,7 @@ it('formats created price with currency and recurring', function () {
 
     $priceChange = new PriceChange(
         productKey: 'premium-plan',
-        priceType: 'monthly',
+        priceKey: 'monthly',
         type: ChangeTypeEnum::Created,
         definition: $definition,
         existingPrice: null,
@@ -214,7 +214,7 @@ it('formats updated price with amount diff', function () {
 
     $priceChange = new PriceChange(
         productKey: 'basic-plan',
-        priceType: 'monthly',
+        priceKey: 'monthly',
         type: ChangeTypeEnum::Updated,
         definition: $definition,
         existingPrice: $existingPrice,
@@ -257,7 +257,7 @@ it('formats price with yearly recurring', function () {
 
     $priceChange = new PriceChange(
         productKey: 'premium-plan',
-        priceType: 'yearly',
+        priceKey: 'yearly',
         type: ChangeTypeEnum::Created,
         definition: $definition,
         existingPrice: null,
@@ -293,7 +293,7 @@ it('formats price with multi-interval recurring', function () {
 
     $priceChange = new PriceChange(
         productKey: 'quarterly-plan',
-        priceType: 'quarterly',
+        priceKey: 'quarterly',
         type: ChangeTypeEnum::Created,
         definition: $definition,
         existingPrice: null,
@@ -329,7 +329,7 @@ it('formats price with euro currency', function () {
 
     $priceChange = new PriceChange(
         productKey: 'basic-plan',
-        priceType: 'monthly',
+        priceKey: 'monthly',
         type: ChangeTypeEnum::Created,
         definition: $definition,
         existingPrice: null,

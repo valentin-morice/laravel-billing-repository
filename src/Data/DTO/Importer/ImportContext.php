@@ -2,6 +2,7 @@
 
 namespace ValentinMorice\LaravelBillingRepository\Data\DTO\Importer;
 
+use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 
@@ -20,9 +21,10 @@ class ImportContext
         public array $providerPrices,
         public Collection $importedProducts,
         public Collection $importedPrices,
+        public readonly ?Command $command = null,
     ) {}
 
-    public static function create(bool $shouldGenerateConfig): self
+    public static function create(bool $shouldGenerateConfig, ?Command $command = null): self
     {
         return new self(
             shouldGenerateConfig: $shouldGenerateConfig,
@@ -30,6 +32,7 @@ class ImportContext
             providerPrices: [],
             importedProducts: collect(),
             importedPrices: collect(),
+            command: $command,
         );
     }
 

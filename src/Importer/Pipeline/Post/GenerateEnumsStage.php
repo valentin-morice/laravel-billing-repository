@@ -16,7 +16,11 @@ class GenerateEnumsStage extends AbstractImportStage
     public function handle(ImportContext $context, Closure $next): mixed
     {
         if ($context->shouldGenerateConfig) {
+            $context->command?->info('Generating enums...');
+
             $this->generator->generate();
+
+            $context->command?->line('✓ ProductKey and PriceKey enums generated');
         }
 
         return $next($context);

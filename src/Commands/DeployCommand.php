@@ -6,6 +6,8 @@ use Illuminate\Console\Command;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\ChangeSet;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\PriceChange;
 use ValentinMorice\LaravelBillingRepository\Data\Enum\ChangeTypeEnum;
+use ValentinMorice\LaravelBillingRepository\Data\Enum\ImmutableFieldStrategy;
+use ValentinMorice\LaravelBillingRepository\Deployer\Actions\ConfirmArchiveAction;
 use ValentinMorice\LaravelBillingRepository\Deployer\Actions\ResolveImmutableStrategyAction;
 use ValentinMorice\LaravelBillingRepository\Deployer\DeployerService;
 use ValentinMorice\LaravelBillingRepository\Exceptions\Deployer\DeploymentCancelledException;
@@ -16,7 +18,11 @@ use ValentinMorice\LaravelBillingRepository\Models\BillingProduct;
 
 class DeployCommand extends Command
 {
-    public $signature = 'billing:deploy {--dry-run : Preview changes without executing}';
+    public $signature = 'billing:deploy
+        {--dry-run : Preview changes without executing}
+        {--force : Skip all confirmations (alias for --archive-all)}
+        {--archive-all : Auto-confirm archiving and use archive strategy for immutable changes}
+        {--duplicate-all : Use duplicate strategy for all immutable field changes}';
 
     public $description = 'Deploy billing products and prices from config to your provider';
 
@@ -24,6 +30,7 @@ class DeployCommand extends Command
         protected DeployerService $deployer,
         protected FormatterService $formatter,
         protected ResolveImmutableStrategyAction $resolveImmutableStrategy,
+        protected ConfirmArchiveAction $confirmArchive,
     ) {
         parent::__construct();
     }
@@ -42,6 +49,13 @@ class DeployCommand extends Command
 
             $changeSet = $this->deployer->analyze();
             $this->formatter->formatAnalysis($this, $changeSet);
+
+            // Confirm archiving of products/prices removed from config
+            $skipConfirmation = $this->option('force')
+                || $this->option('archive-all')
+                || $this->option('duplicate-all')
+                || $this->option('dry-run');
+            $this->confirmArchive->handle($this, $changeSet, $skipConfirmation);
 
             // Resolve strategies for immutable field changes
             if ($changeSet->hasImmutableChanges()) {
@@ -62,8 +76,8 @@ class DeployCommand extends Command
 
             // Use deployWithStrategies if we have resolved strategies
             $executedChangeSet = $changeSet->hasImmutableChanges()
-                ? $this->deployer->deployWithStrategies($changeSet)
-                : $this->deployer->deploy();
+                ? $this->deployer->deployWithStrategies($changeSet, $this)
+                : $this->deployer->deploy($this);
 
             foreach ($executedChangeSet->productChanges as $change) {
                 if ($change->type !== ChangeTypeEnum::Unchanged) {
@@ -130,15 +144,25 @@ class DeployCommand extends Command
 
         foreach ($changeSet->priceChanges as $priceChange) {
             if ($priceChange->hasImmutableChanges) {
-                $priceChange = $this->resolveImmutableStrategy->handle(
-                    $this,
-                    $priceChange,
-                    $existingKeys
-                );
+                // Handle CI flags for automatic strategy selection
+                if ($this->option('archive-all') || $this->option('force')) {
+                    $priceChange = $priceChange->withStrategy(ImmutableFieldStrategy::Archive);
+                } elseif ($this->option('duplicate-all')) {
+                    $newKey = $this->generateUniqueKey($priceChange->priceKey, $existingKeys);
+                    $priceChange = $priceChange->withStrategy(ImmutableFieldStrategy::Duplicate, $newKey);
+                    $existingKeys[] = $newKey;
+                } else {
+                    // Interactive resolution
+                    $priceChange = $this->resolveImmutableStrategy->handle(
+                        $this,
+                        $priceChange,
+                        $existingKeys
+                    );
 
-                // Add new key to existing keys to prevent collisions
-                if ($priceChange->newPriceKey !== null) {
-                    $existingKeys[] = $priceChange->newPriceKey;
+                    // Add new key to existing keys to prevent collisions
+                    if ($priceChange->newPriceKey !== null) {
+                        $existingKeys[] = $priceChange->newPriceKey;
+                    }
                 }
             }
 
@@ -146,6 +170,21 @@ class DeployCommand extends Command
         }
 
         return $changeSet->withPriceChanges($updatedPriceChanges);
+    }
+
+    /**
+     * Generate a unique key for the duplicate strategy
+     *
+     * @param  array<string>  $existingKeys
+     */
+    private function generateUniqueKey(string $baseKey, array $existingKeys): string
+    {
+        $suffix = 1;
+        while (in_array("{$baseKey}_{$suffix}", $existingKeys, true)) {
+            $suffix++;
+        }
+
+        return "{$baseKey}_{$suffix}";
     }
 
     /**

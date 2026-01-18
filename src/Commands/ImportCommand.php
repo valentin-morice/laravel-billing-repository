@@ -42,7 +42,7 @@ class ImportCommand extends Command
             $this->info("Importing from {$provider}...");
             $this->newLine();
 
-            $result = $this->importer->import($generateConfig);
+            $result = $this->importer->import($generateConfig, $this);
 
             $this->displayResults($result, $generateConfig);
 
@@ -62,6 +62,7 @@ class ImportCommand extends Command
     {
         $summary = $result->getSummary();
 
+        $this->newLine();
         $this->info('Import completed successfully!');
         $this->newLine();
 

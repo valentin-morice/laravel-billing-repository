@@ -2,6 +2,7 @@
 
 namespace ValentinMorice\LaravelBillingRepository\Deployer;
 
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\ChangeSet;
@@ -27,10 +28,10 @@ class DeployerService
      *
      * @throws DeploymentFailedException
      */
-    public function deploy(): ChangeSet
+    public function deploy(?Command $command = null): ChangeSet
     {
         try {
-            return $this->buildChangeSet->handle(dryRun: false);
+            return $this->buildChangeSet->handle(dryRun: false, command: $command);
         } catch (Throwable $e) {
             $this->logAndThrowDeploymentFailed($e);
         }
@@ -44,10 +45,10 @@ class DeployerService
      *
      * @throws DeploymentFailedException
      */
-    public function deployWithStrategies(ChangeSet $changeSet): ChangeSet
+    public function deployWithStrategies(ChangeSet $changeSet, ?Command $command = null): ChangeSet
     {
         try {
-            return $this->buildChangeSet->handleWithStrategies($changeSet);
+            return $this->buildChangeSet->handleWithStrategies($changeSet, command: $command);
         } catch (Throwable $e) {
             $this->logAndThrowDeploymentFailed($e);
         }

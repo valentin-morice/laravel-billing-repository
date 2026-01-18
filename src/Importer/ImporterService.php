@@ -2,6 +2,7 @@
 
 namespace ValentinMorice\LaravelBillingRepository\Importer;
 
+use Illuminate\Console\Command;
 use Illuminate\Pipeline\Pipeline;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Importer\ImportContext;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Importer\ImportResult;
@@ -21,9 +22,9 @@ class ImporterService
     /**
      * Import products and prices from provider
      */
-    public function import(bool $generateConfig = false): ImportResult
+    public function import(bool $generateConfig = false, ?Command $command = null): ImportResult
     {
-        $context = ImportContext::create($generateConfig);
+        $context = ImportContext::create($generateConfig, $command);
 
         /** @var ImportContext $result */
         $result = $this->pipeline

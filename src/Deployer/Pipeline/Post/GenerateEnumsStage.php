@@ -14,6 +14,10 @@ class GenerateEnumsStage extends AbstractProcessStage
 
     protected function process(DeployContext $context): void
     {
+        $context->command?->info('Generating enums...');
+
         $this->generator->generate();
+
+        $context->command?->line('✓ ProductKey and PriceKey enums generated');
     }
 }

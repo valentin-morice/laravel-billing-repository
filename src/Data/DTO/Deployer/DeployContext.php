@@ -2,6 +2,7 @@
 
 namespace ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer;
 
+use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Config\ProductDefinition;
 
@@ -17,12 +18,13 @@ class DeployContext
         public readonly array $definitions,
         public Collection $productChanges,
         public Collection $priceChanges,
+        public readonly ?Command $command = null,
     ) {}
 
     /**
      * Create a new context for deployment
      */
-    public static function create(bool $isDryRun): self
+    public static function create(bool $isDryRun, ?Command $command = null): self
     {
         $productsConfig = config('billing.products', []);
 
@@ -35,13 +37,14 @@ class DeployContext
             definitions: $definitions,
             productChanges: collect(),
             priceChanges: collect(),
+            command: $command,
         );
     }
 
     /**
      * Create a context from a pre-analyzed ChangeSet (with resolved strategies)
      */
-    public static function createFromChangeSet(ChangeSet $changeSet): self
+    public static function createFromChangeSet(ChangeSet $changeSet, ?Command $command = null): self
     {
         $productsConfig = config('billing.products', []);
 
@@ -54,6 +57,7 @@ class DeployContext
             definitions: $definitions,
             productChanges: collect($changeSet->productChanges),
             priceChanges: collect($changeSet->priceChanges),
+            command: $command,
         );
     }
 

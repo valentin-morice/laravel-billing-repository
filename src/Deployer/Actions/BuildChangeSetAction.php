@@ -2,6 +2,7 @@
 
 namespace ValentinMorice\LaravelBillingRepository\Deployer\Actions;
 
+use Illuminate\Console\Command;
 use Illuminate\Pipeline\Pipeline;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\ChangeSet;
 use ValentinMorice\LaravelBillingRepository\Data\DTO\Deployer\DeployContext;
@@ -22,9 +23,9 @@ class BuildChangeSetAction
     /**
      * Build a change set by analyzing or executing deployment
      */
-    public function handle(bool $dryRun): ChangeSet
+    public function handle(bool $dryRun, ?Command $command = null): ChangeSet
     {
-        $context = DeployContext::create($dryRun);
+        $context = DeployContext::create($dryRun, $command);
 
         /** @var DeployContext $result */
         $result = $this->pipeline
@@ -49,9 +50,9 @@ class BuildChangeSetAction
      * This skips detection stages since we already have the detected changes
      * with user-resolved strategies for immutable field changes.
      */
-    public function handleWithStrategies(ChangeSet $changeSet): ChangeSet
+    public function handleWithStrategies(ChangeSet $changeSet, ?Command $command = null): ChangeSet
     {
-        $context = DeployContext::createFromChangeSet($changeSet);
+        $context = DeployContext::createFromChangeSet($changeSet, $command);
 
         /** @var DeployContext $result */
         $result = $this->pipeline

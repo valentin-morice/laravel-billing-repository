@@ -95,11 +95,11 @@ class DeployCommand extends Command
             $this->newLine();
             $this->info('Deployment complete!');
 
-            // Regenerate config if any duplicates were created
+            // Regenerate config and enums if any duplicates were created
             if ($executedChangeSet->hasDuplicates()) {
                 $this->call('billing:import', ['--generate-config' => true, '--quiet' => true]);
                 $this->newLine();
-                $this->info('Config file regenerated with new price keys.');
+                $this->info('Config file and enums regenerated with new price keys.');
             }
 
             return self::SUCCESS;

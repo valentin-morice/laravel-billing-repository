@@ -20,7 +20,6 @@ class DeployCommand extends Command
 {
     public $signature = 'billing:deploy
         {--dry-run : Preview changes without executing}
-        {--force : Skip all confirmations (alias for --archive-all)}
         {--archive-all : Auto-confirm archiving and use archive strategy for immutable changes}
         {--duplicate-all : Use duplicate strategy for all immutable field changes}';
 
@@ -51,8 +50,7 @@ class DeployCommand extends Command
             $this->formatter->formatAnalysis($this, $changeSet);
 
             // Confirm archiving of products/prices removed from config
-            $skipConfirmation = $this->option('force')
-                || $this->option('archive-all')
+            $skipConfirmation = $this->option('archive-all')
                 || $this->option('duplicate-all')
                 || $this->option('dry-run');
             $this->confirmArchive->handle($this, $changeSet, $skipConfirmation);
@@ -144,7 +142,7 @@ class DeployCommand extends Command
         foreach ($changeSet->priceChanges as $priceChange) {
             if ($priceChange->hasImmutableChanges) {
                 // Handle CI flags for automatic strategy selection
-                if ($this->option('archive-all') || $this->option('force')) {
+                if ($this->option('archive-all')) {
                     $priceChange = $priceChange->withStrategy(ImmutableFieldStrategy::Archive);
                 } elseif ($this->option('duplicate-all')) {
                     $newKey = $this->generateUniqueKey($priceChange->priceKey, $existingKeys);

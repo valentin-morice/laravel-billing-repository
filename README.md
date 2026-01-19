@@ -61,7 +61,7 @@ This automatically:
 **3. Use type-safe accessors in your code:**
 
 ```php
-use ValentinMorice\LaravelBillingRepository\Data\Enum\Consumer\{ProductKey, PriceKey};
+use App\Enums\Billing\{ProductKey, PriceKey};
 use ValentinMorice\LaravelBillingRepository\Facades\BillingRepository;
 
 // Option 1: Direct facade access with string keys
@@ -69,8 +69,8 @@ $priceId = BillingRepository::priceId('premium', 'monthly');
 
 // Option 2: Type-safe enums (auto-generated after deploy)
 $priceId = BillingRepository::priceId(
-    ProductKey::PREMIUM,    // 'premium'
-    PriceKey::MONTHLY       // 'monthly'
+    ProductKey::Premium,    // 'premium'
+    PriceKey::Monthly       // 'monthly'
 );
 
 // Use in your application
@@ -85,7 +85,7 @@ $checkout = $user->checkout('price_1ABCxyz123', ['quantity' => 1]);
 
 // ✅ After: Type-safe, refactor-friendly
 $checkout = $user->checkout(
-    BillingRepository::priceId(ProductKey::PREMIUM, PriceKey::MONTHLY),
+    BillingRepository::priceId(ProductKey::Premium, PriceKey::Monthly),
     ['quantity' => 1]
 );
 ```
@@ -164,34 +164,60 @@ php artisan billing:deploy --dry-run
 
 # Deploy changes
 php artisan billing:deploy
+
+# CI/Non-interactive: Auto-archive for immutable field changes
+php artisan billing:deploy --archive-all
+
+# CI/Non-interactive: Auto-duplicate for immutable field changes
+php artisan billing:deploy --duplicate-all
 ```
 
 The command shows a plan of changes (create/update/archive) before applying them.
 
+**Handling Immutable Fields:**
+
+Stripe prices have immutable fields (amount, currency, recurring interval) that cannot be updated once created. When you modify these fields in your config, the deploy command detects this and prompts you to choose a strategy:
+
+- **Archive**: Archives the old price in Stripe and creates a new price with the same key. Existing subscriptions using the old price will continue to work, but new subscriptions will use the new price.
+- **Duplicate**: Keeps the old price active and creates a new price with an incremented key (e.g., `monthly` → `monthly_1`). Useful when you need both prices to remain available.
+
+In CI environments, use `--archive-all` or `--duplicate-all` to skip interactive prompts.
+
 ### 4. Auto-Generated Type-Safe Enums
 
-After running `billing:deploy` or `billing:import`, the package automatically generates backed enum files:
+After running `billing:deploy` or `billing:import`, the package automatically generates backed enum files in your application:
 
-**src/Data/Enum/Consumer/ProductKey.php** (auto-generated):
+**app/Enums/Billing/ProductKey.php** (auto-generated):
 ```php
-namespace ValentinMorice\LaravelBillingRepository\Data\Enum\Consumer;
+namespace App\Enums\Billing;
 
 enum ProductKey: string
 {
-    case BASIC = 'basic';
-    case PREMIUM = 'premium';
+    case Basic = 'basic';
+    case Premium = 'premium';
 }
 ```
 
-**src/Data/Enum/Consumer/PriceKey.php** (auto-generated):
+**app/Enums/Billing/PriceKey.php** (auto-generated):
 ```php
-namespace ValentinMorice\LaravelBillingRepository\Data\Enum\Consumer;
+namespace App\Enums\Billing;
 
 enum PriceKey: string
 {
-    case MONTHLY = 'monthly';
-    case YEARLY = 'yearly';
+    case Monthly = 'monthly';
+    case Yearly = 'yearly';
 }
+```
+
+**Configurable Location:**
+
+The enum path and namespace are configurable in `config/billing.php`:
+
+```php
+'enums' => [
+    'path' => app_path('Enums/Billing'),
+    'namespace' => 'App\\Enums\\Billing',
+],
 ```
 
 **Benefits:**
@@ -201,28 +227,28 @@ enum PriceKey: string
 - **Self-Documenting**: See all available products/prices in one place
 
 **Enum Case Naming:**
-- Product keys: Converted to uppercase (e.g., `'premium'` → `PREMIUM`)
-- Price types: Converted to uppercase (e.g., `'monthly'` → `MONTHLY`)
-- Handles special cases: Separators become underscores (e.g., `'pro-plan'` → `PRO_PLAN`)
-- Avoids collisions: Reserved PHP keywords get `_CASE` suffix
+- Product keys: Converted to PascalCase (e.g., `'premium'` → `Premium`)
+- Price types: Converted to PascalCase (e.g., `'monthly'` → `Monthly`)
+- Handles special cases: Separators trigger new words (e.g., `'pro-plan'` → `ProPlan`)
+- Avoids collisions: Reserved PHP keywords get `Case` suffix
 
 ### 5. Type-Safe Facade
 
 Access provider IDs throughout your codebase:
 
 ```php
-use ValentinMorice\LaravelBillingRepository\Data\Enum\Consumer\{ProductKey, PriceKey};
+use App\Enums\Billing\{ProductKey, PriceKey};
 use ValentinMorice\LaravelBillingRepository\Facades\BillingRepository;
 
 // Get a specific price ID (with enums)
-$priceId = BillingRepository::priceId(ProductKey::PREMIUM, PriceKey::MONTHLY);
+$priceId = BillingRepository::priceId(ProductKey::Premium, PriceKey::Monthly);
 // Returns: "price_1ABC..." (Stripe price ID)
 
 // Or use string keys directly
 $priceId = BillingRepository::priceId('premium', 'monthly');
 
 // Get a product ID
-$productId = BillingRepository::productId(ProductKey::PREMIUM);
+$productId = BillingRepository::productId(ProductKey::Premium);
 // Returns: "prod_XYZ..." (Stripe product ID)
 
 // Use in your application
@@ -283,8 +309,8 @@ BILLING_API_KEY=sk_test_...
 ### Starting Fresh
 1. Define products in `config/billing.php`
 2. Run `php artisan billing:deploy` to create them in Stripe
-3. Enums are auto-generated in `src/Data/Enum/Consumer/`
-4. Use `BillingRepository::priceId(ProductKey::PREMIUM, PriceKey::MONTHLY)` in your code
+3. Enums are auto-generated in `app/Enums/Billing/`
+4. Use `BillingRepository::priceId(ProductKey::Premium, PriceKey::Monthly)` in your code
 
 ### Migrating Existing Stripe Setup
 1. Run `php artisan billing:import --generate-config` to pull existing products
@@ -297,6 +323,16 @@ BILLING_API_KEY=sk_test_...
 2. Run `php artisan billing:deploy --dry-run` to preview
 3. Run `php artisan billing:deploy` to apply
 4. Enums are automatically regenerated
+
+### CI/CD Deployment
+For automated deployments, use flags to skip interactive prompts:
+```bash
+# Auto-archive old prices when immutable fields change
+php artisan billing:deploy --archive-all
+
+# Auto-duplicate prices when immutable fields change
+php artisan billing:deploy --duplicate-all
+```
 
 ## Real-World Example
 
@@ -352,7 +388,7 @@ public function checkout(Request $request)
 public function upgrade(User $user)
 {
     $user->subscription('default')->swap(
-        BillingRepository::priceId(ProductKey::PRO, PriceKey::YEARLY)
+        BillingRepository::priceId(ProductKey::Pro, PriceKey::Yearly)
     );
 }
 
@@ -360,9 +396,9 @@ public function upgrade(User $user)
 public function pricing()
 {
     return view('pricing', [
-        'starterMonthly' => BillingRepository::priceId(ProductKey::STARTER, PriceKey::MONTHLY),
-        'proMonthly' => BillingRepository::priceId(ProductKey::PRO, PriceKey::MONTHLY),
-        'proYearly' => BillingRepository::priceId(ProductKey::PRO, PriceKey::YEARLY),
+        'starterMonthly' => BillingRepository::priceId(ProductKey::Starter, PriceKey::Monthly),
+        'proMonthly' => BillingRepository::priceId(ProductKey::Pro, PriceKey::Monthly),
+        'proYearly' => BillingRepository::priceId(ProductKey::Pro, PriceKey::Yearly),
     ]);
 }
 ```

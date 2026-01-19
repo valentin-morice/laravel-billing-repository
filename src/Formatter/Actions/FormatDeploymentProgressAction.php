@@ -27,7 +27,8 @@ class FormatDeploymentProgressAction
             $providerId = $change->resultProduct !== null ? $change->resultProduct->provider_id : '';
             $message = "{$symbol} {$action} product: {$name}";
         } else {
-            $name = "{$change->productKey}.{$change->priceKey}";
+            $priceKey = $change->getEffectivePriceKey();
+            $name = "{$change->productKey}.{$priceKey}";
             $providerId = $change->resultPrice !== null ? $change->resultPrice->provider_id : '';
             $message = "{$symbol} {$action} price: {$name}";
         }

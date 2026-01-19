@@ -73,6 +73,7 @@ class DeployCommand extends Command
 
             $this->newLine();
             $this->info("Deploying to {$provider}...");
+            $this->newLine();
 
             // Use deployWithStrategies if we have resolved strategies
             $executedChangeSet = $changeSet->hasImmutableChanges()
@@ -98,7 +99,7 @@ class DeployCommand extends Command
             if ($executedChangeSet->hasDuplicates()) {
                 $this->newLine();
                 $this->call('billing:import', ['--generate-config' => true]);
-                $this->info('Config file regenerated with new price keys.');
+                $this->info('Config file regenerated.');
             }
 
             return self::SUCCESS;

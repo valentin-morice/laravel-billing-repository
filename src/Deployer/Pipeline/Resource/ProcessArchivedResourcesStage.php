@@ -28,6 +28,15 @@ class ProcessArchivedResourcesStage extends AbstractProcessStage
             }
 
             $configuredPriceKeys = array_keys($productChange->definition->prices);
+
+            // Include newPriceKey values from duplicate strategy to prevent archiving just-created prices
+            $duplicateKeys = $context->priceChanges
+                ->filter(fn (PriceChange $change) => $change->productKey === $productChange->productKey && $change->newPriceKey !== null)
+                ->map(fn (PriceChange $change) => $change->newPriceKey)
+                ->all();
+
+            $configuredPriceKeys = array_merge($configuredPriceKeys, $duplicateKeys);
+
             $result = $this->priceService->archiveRemoved(
                 $productChange->resultProduct,
                 $configuredPriceKeys

@@ -20,7 +20,7 @@ class GenerateEnumsStage extends AbstractImportStage
 
             $this->generator->generate();
 
-            $context->command?->line('✓ ProductKey and PriceKey enums generated');
+            $context->command?->info('✓ ProductKey and PriceKey enums generated');
         }
 
         return $next($context);

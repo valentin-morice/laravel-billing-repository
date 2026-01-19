@@ -18,6 +18,6 @@ class GenerateEnumsStage extends AbstractProcessStage
 
         $this->generator->generate();
 
-        $context->command?->line('✓ ProductKey and PriceKey enums generated');
+        $context->command?->info('✓ ProductKey and PriceKey enums generated');
     }
 }

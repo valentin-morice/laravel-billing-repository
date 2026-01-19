@@ -76,9 +76,9 @@ class ResolveImmutableStrategyAction
         $choice = $command->choice(
             'How would you like to handle this?',
             [
-                ImmutableFieldStrategy::Archive->value => ImmutableFieldStrategy::Archive->description(),
-                ImmutableFieldStrategy::Duplicate->value => ImmutableFieldStrategy::Duplicate->description(),
-                ImmutableFieldStrategy::Cancel->value => ImmutableFieldStrategy::Cancel->description(),
+                ImmutableFieldStrategy::Archive->value,
+                ImmutableFieldStrategy::Duplicate->value,
+                ImmutableFieldStrategy::Cancel->value,
             ],
             ImmutableFieldStrategy::Archive->value
         );

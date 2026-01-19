@@ -180,12 +180,20 @@ class DeployCommand extends Command
      */
     private function generateUniqueKey(string $baseKey, array $existingKeys): string
     {
-        $suffix = 1;
-        while (in_array("{$baseKey}_{$suffix}", $existingKeys, true)) {
+        // Check if key already ends with _N and increment it
+        if (preg_match('/^(.+)_(\d+)$/', $baseKey, $matches)) {
+            $prefix = $matches[1];
+            $suffix = (int) $matches[2] + 1;
+        } else {
+            $prefix = $baseKey;
+            $suffix = 1;
+        }
+
+        while (in_array("{$prefix}_{$suffix}", $existingKeys, true)) {
             $suffix++;
         }
 
-        return "{$baseKey}_{$suffix}";
+        return "{$prefix}_{$suffix}";
     }
 
     /**

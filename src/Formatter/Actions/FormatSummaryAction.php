@@ -31,5 +31,7 @@ class FormatSummaryAction
         } else {
             $command->line('Summary: '.$parts->implode(', '));
         }
+
+        $command->newLine();
     }
 }

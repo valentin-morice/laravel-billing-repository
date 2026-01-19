@@ -54,7 +54,6 @@ class ResolveImmutableStrategyAction
      */
     private function displayImmutableChanges(Command $command, PriceChange $change): void
     {
-        $command->newLine();
         $command->warn("⚠ Immutable field changes detected for {$change->productKey}.{$change->priceKey}");
         $command->newLine();
 

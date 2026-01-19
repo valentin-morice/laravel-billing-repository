@@ -71,7 +71,6 @@ class DeployCommand extends Command
                 return self::SUCCESS;
             }
 
-            $this->newLine();
             $this->info("Deploying to {$provider}...");
             $this->newLine();
 
@@ -104,7 +103,6 @@ class DeployCommand extends Command
 
             return self::SUCCESS;
         } catch (DeploymentCancelledException $e) {
-            $this->newLine();
             $this->warn($e->getMessage());
 
             return self::SUCCESS;

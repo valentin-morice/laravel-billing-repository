@@ -10,7 +10,8 @@ class ImportCommand extends Command
 {
     public $signature = 'billing:import
         {--db-only : Import to database only (no config generation)}
-        {--generate-config : Import and generate config file}';
+        {--generate-config : Import and generate config file}
+        {--quiet : Suppress output (useful when called from other commands)}';
 
     public $description = 'Import products and prices from your billing provider';
 
@@ -37,14 +38,19 @@ class ImportCommand extends Command
         }
 
         try {
+            $quiet = $this->option('quiet');
             $provider = ucfirst(config('billing.provider', 'stripe'));
 
-            $this->info("Importing from {$provider}...");
-            $this->newLine();
+            if (! $quiet) {
+                $this->info("Importing from {$provider}...");
+                $this->newLine();
+            }
 
-            $result = $this->importer->import($generateConfig, $this);
+            $result = $this->importer->import($generateConfig, $quiet ? null : $this);
 
-            $this->displayResults($result, $generateConfig);
+            if (! $quiet) {
+                $this->displayResults($result, $generateConfig);
+            }
 
             return self::SUCCESS;
         } catch (\Exception $e) {

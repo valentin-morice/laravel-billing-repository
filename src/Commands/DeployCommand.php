@@ -97,9 +97,9 @@ class DeployCommand extends Command
 
             // Regenerate config if any duplicates were created
             if ($executedChangeSet->hasDuplicates()) {
+                $this->call('billing:import', ['--generate-config' => true, '--quiet' => true]);
                 $this->newLine();
-                $this->call('billing:import', ['--generate-config' => true]);
-                $this->info('Config file regenerated.');
+                $this->info('Config file regenerated with new price keys.');
             }
 
             return self::SUCCESS;

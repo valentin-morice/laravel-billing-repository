@@ -23,7 +23,6 @@ class UpsertProductAction
 
         if ($existing) {
             $existing->update([
-                'key' => $key,
                 'name' => $name,
                 'description' => $description,
                 'metadata' => $metadata,

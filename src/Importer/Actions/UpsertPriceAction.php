@@ -28,7 +28,6 @@ class UpsertPriceAction
         if ($existing) {
             $existing->update([
                 'product_id' => $productId,
-                'key' => $key,
                 'amount' => $amount,
                 'currency' => $currency,
                 'recurring' => $recurring,

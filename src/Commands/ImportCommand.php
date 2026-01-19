@@ -10,8 +10,7 @@ class ImportCommand extends Command
 {
     public $signature = 'billing:import
         {--db-only : Import to database only (no config generation)}
-        {--generate-config : Import and generate config file}
-        {--quiet : Suppress output (useful when called from other commands)}';
+        {--generate-config : Import and generate config file}';
 
     public $description = 'Import products and prices from your billing provider';
 
@@ -38,7 +37,7 @@ class ImportCommand extends Command
         }
 
         try {
-            $quiet = $this->option('quiet');
+            $quiet = $this->output->isQuiet();
             $provider = ucfirst(config('billing.provider', 'stripe'));
 
             if (! $quiet) {

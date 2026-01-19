@@ -97,7 +97,7 @@ class DeployCommand extends Command
 
             // Regenerate config and enums if any duplicates were created
             if ($executedChangeSet->hasDuplicates()) {
-                $this->call('billing:import', ['--generate-config' => true, '--quiet' => true]);
+                $this->callSilently('billing:import', ['--generate-config' => true]);
                 $this->newLine();
                 $this->info('Config file and enums regenerated with new price keys.');
             }

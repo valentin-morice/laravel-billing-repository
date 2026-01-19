@@ -21,6 +21,7 @@ it('displays no changes message when changeset is empty', function () {
     $command->shouldReceive('line')
         ->once()
         ->with('Summary: No changes');
+    $command->shouldReceive('newLine')->once();
 
     $action->handle($command, $changeSet);
 });
@@ -51,6 +52,7 @@ it('displays summary for created items only', function () {
     $command->shouldReceive('line')
         ->once()
         ->with('Summary: 2 created');
+    $command->shouldReceive('newLine')->once();
 
     $action->handle($command, $changeSet);
 });
@@ -72,6 +74,7 @@ it('displays summary for updated items only', function () {
     $command->shouldReceive('line')
         ->once()
         ->with('Summary: 1 updated');
+    $command->shouldReceive('newLine')->once();
 
     $action->handle($command, $changeSet);
 });
@@ -94,6 +97,7 @@ it('displays summary for archived items only', function () {
     $command->shouldReceive('line')
         ->once()
         ->with('Summary: 1 archived');
+    $command->shouldReceive('newLine')->once();
 
     $action->handle($command, $changeSet);
 });
@@ -115,6 +119,7 @@ it('displays summary for unchanged items only', function () {
     $command->shouldReceive('line')
         ->once()
         ->with('Summary: 1 unchanged');
+    $command->shouldReceive('newLine')->once();
 
     $action->handle($command, $changeSet);
 });
@@ -139,6 +144,7 @@ it('displays summary for mixed changes', function () {
     $command->shouldReceive('line')
         ->once()
         ->with('Summary: 2 created, 1 updated, 1 archived, 1 unchanged');
+    $command->shouldReceive('newLine')->once();
 
     $action->handle($command, $changeSet);
 });
@@ -163,6 +169,7 @@ it('combines product and price counts correctly', function () {
     $command->shouldReceive('line')
         ->once()
         ->with('Summary: 3 created, 1 updated');
+    $command->shouldReceive('newLine')->once();
 
     $action->handle($command, $changeSet);
 });
@@ -181,6 +188,7 @@ it('excludes zero counts from summary', function () {
     $command->shouldReceive('line')
         ->once()
         ->with('Summary: 1 created');
+    $command->shouldReceive('newLine')->once();
 
     $action->handle($command, $changeSet);
 });

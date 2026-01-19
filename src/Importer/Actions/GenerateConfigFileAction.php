@@ -5,7 +5,6 @@ namespace ValentinMorice\LaravelBillingRepository\Importer\Actions;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Facades\File;
 use PhpParser\Error;
-use PhpParser\Lexer;
 use PhpParser\Node\ArrayItem;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Scalar\Int_;
@@ -26,15 +25,12 @@ class GenerateConfigFileAction
 {
     private ConfigFilePrinter $printer;
 
-    private Lexer $lexer;
-
     private NodeTraverser $traverser;
 
     public function __construct(
         protected ?Parser $parser = null,
         protected ?NodeFinder $nodeFinder = null,
     ) {
-        $this->lexer = new Lexer;
         $this->parser = $parser ?? (new ParserFactory)->createForNewestSupportedVersion();
         $this->nodeFinder = $nodeFinder ?? new NodeFinder;
         $this->printer = new ConfigFilePrinter;

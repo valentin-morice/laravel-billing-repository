@@ -2,8 +2,7 @@
 
 namespace ValentinMorice\LaravelBillingRepository\Facades;
 
-use ValentinMorice\LaravelBillingRepository\Data\Enum\Consumer\PriceKey;
-use ValentinMorice\LaravelBillingRepository\Data\Enum\Consumer\ProductKey;
+use BackedEnum;
 use ValentinMorice\LaravelBillingRepository\Exceptions\Models\PriceNotFoundException;
 use ValentinMorice\LaravelBillingRepository\Exceptions\Models\ProductNotFoundException;
 use ValentinMorice\LaravelBillingRepository\Facades\Support\BillingConfigRepository;
@@ -33,7 +32,7 @@ class BillingRepository
      * @throws ProductNotFoundException
      * @throws PriceNotFoundException
      */
-    public static function priceId(string|ProductKey $productKey, string|PriceKey $priceKey): string
+    public static function priceId(string|BackedEnum $productKey, string|BackedEnum $priceKey): string
     {
         $product = BillingProduct::active()
             ->where('key', $productKey)
@@ -58,7 +57,7 @@ class BillingRepository
     /**
      * @throws ProductNotFoundException
      */
-    public static function productId(string|ProductKey $productKey): string
+    public static function productId(string|BackedEnum $productKey): string
     {
         $product = BillingProduct::active()
             ->where('key', $productKey)

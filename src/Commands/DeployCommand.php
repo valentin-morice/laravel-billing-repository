@@ -218,5 +218,4 @@ class DeployCommand extends Command
 
         return array_unique(array_merge($keys, $dbKeys));
     }
-
 }

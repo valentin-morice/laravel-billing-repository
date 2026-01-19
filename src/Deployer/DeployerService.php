@@ -58,8 +58,6 @@ class DeployerService
      * Log deployment failure and throw exception
      *
      * @throws DeploymentFailedException
-     *
-     * @return never
      */
     private function logAndThrowDeploymentFailed(Throwable $e): never
     {
